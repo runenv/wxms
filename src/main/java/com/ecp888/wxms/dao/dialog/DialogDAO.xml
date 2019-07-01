@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecp888.wxms.dao.dialog.IDialogDAO">
+	<resultMap type="DialogVO" id="dialogVOMap">
+		<id property="dialogId" column="dialog_id" />
+		<result property="title" column="title" />
+		<result property="content" column="content" jdbcType="CLOB" javaType = "java.lang.String" 
+			typeHandler="org.apache.ibatis.type.ClobTypeHandler" />
+		<result property="imgUrl" column="img_url" />
+		<result property="htmlUrl" column="html_url" />
+		<result property="openUrl" column="open_url" />
+		<result property="directFlag" column="direct_flag" />
+		<result property="startDate" column="start_date" />
+		<result property="endDate" column="end_date" />
+		<result property="orderNum" column="order_num" />
+		<result property="actStatus" column="act_status" />
+		<result property="classId" column="class_id" />
+		<result property="lotteryId" column="lottery_id" />
+		<result property="testUser" column="test_user" />
+		<result property="targetUser" column="target_user" />
+		<result property="dialogStatus" column="dialog_status" />
+		<result property="noticeId" column="notice_id" />
+		<result property="createUser" column="create_user" />
+		<result property="updateUser" column="update_user" />
+		<result property="createDate" column="create_date" />
+		<result property="updateDate" column="update_date" />
+	</resultMap>
+    <select id="getDialogByName" resultMap="dialogVOMap">
+		select t.dialog_id,
+		       t.title,
+		       t.content,
+		       t.img_url,
+		       t.html_url,
+		       t.open_url,
+		       t.direct_flag,
+		       to_char(t.start_date,'yyyy-MM-dd hh24:mi:ss') start_date,
+		       to_char(t.end_date,'yyyy-MM-dd hh24:mi:ss') end_date,
+		       t.order_num,
+		       t.act_status,
+		       t.class_id,
+		       t.lottery_id,
+		       t.test_user,
+		       t.target_user,
+		       t.dialog_status,
+		       t.notice_id,
+		       t.create_user,
+		       t.update_user,
+		       to_char(t.create_date,'yyyy-MM-dd hh24:mi:ss') create_date,
+		       to_char(t.update_date,'yyyy-MM-dd hh24:mi:ss') update_date
+		  from t_wx_dialog t
+	  where t.title = #{title}
+	</select>
+	
+	<select id="getDialogById" resultMap="dialogVOMap">
+		select t.dialog_id,
+		       t.title,
+		       t.content,
+		       t.img_url,
+		       t.html_url,
+		       t.open_url,
+		       t.direct_flag,
+		       to_char(t.start_date,'yyyy-MM-dd hh24:mi:ss') start_date,
+		       to_char(t.end_date,'yyyy-MM-dd hh24:mi:ss') end_date,
+		       t.order_num,
+		       t.act_status,
+		       t.class_id,
+		       t.lottery_id,
+		       t.test_user,
+		       t.target_user,
+		       t.dialog_status,
+		       t.notice_id,
+		       t.create_user,
+		       t.update_user,
+		       to_char(t.create_date,'yyyy-MM-dd hh24:mi:ss') create_date,
+		       to_char(t.update_date,'yyyy-MM-dd hh24:mi:ss') update_date
+		  from t_wx_dialog t
+		where t.dialog_id = #{dialogId}
+	</select>
+	
+	<select id="countDialog" resultType="int">
+		select count(1) 
+		from t_wx_dialog t where 1=1
+	    <if test="#{searchValue!=null and searchValue!=''}">
+	    	and lower(t.title)
+		    	 like '%' || lower(trim(#{searchValue,jdbcType=VARCHAR})) || '%'
+	    </if>
+	</select>
+	
+	<select id="listDialog" resultMap="dialogVOMap">
+		select * from (
+			select t.*,rownum rm from (
+				select t.dialog_id,
+				       t.title,
+				       t.content,
+				       t.img_url,
+				       t.html_url,
+				       t.open_url,
+				       t.direct_flag,
+				       to_char(t.start_date,'yyyy-MM-dd hh24:mi:ss') start_date,
+			       	   to_char(t.end_date,'yyyy-MM-dd hh24:mi:ss') end_date,
+				       t.order_num,
+				       t.act_status,
+				       t.class_id,
+				       t.lottery_id,
+				       t.test_user,
+				       t.target_user,
+				       t.dialog_status,
+				       t.notice_id,
+				       t.create_user,
+				       t.update_user,
+				       to_char(t.create_date,'yyyy-MM-dd hh24:mi:ss') create_date,
+			       	   to_char(t.update_date,'yyyy-MM-dd hh24:mi:ss') update_date
+				  from t_wx_dialog t where 1=1
+			    <if test='_parameter.get("0").searchValue!=null and _parameter.get("0").searchValue!=""'>
+			    	and lower(t.title)
+			    	 like '%' || lower(trim(#{0.searchValue,jdbcType=VARCHAR})) || '%'
+			    </if>
+			    order by t.order_num desc) t
+		    <![CDATA[where rownum <= #{1.endRecord}
+	    ) where rm > #{1.firstRecord} ]]>
+	</select>
+	
+	<insert id="addDialog">
+		<selectKey resultType="java.lang.Integer" order="BEFORE" keyProperty="dialogId">
+			select seq_wx_dialog.nextval from dual
+		</selectKey>
+		insert into t_wx_dialog t
+		  (dialog_id,
+		   title,
+		   content,
+		   img_url,
+		   html_url,
+		   open_url,
+		   direct_flag,
+		   start_date,
+		   end_date,
+		   order_num,
+		   act_status,
+		   class_id,
+		   lottery_id,
+		   test_user,
+		   target_user,
+		   dialog_status,
+		   notice_id,
+		   create_user,
+		   update_user,
+		   create_date,
+		   update_date)
+		values
+		  (#{dialogId},
+		   #{title,jdbcType=VARCHAR},
+		   #{content,jdbcType=CLOB},
+		   #{imgUrl,jdbcType=VARCHAR},
+		   #{htmlUrl,jdbcType=VARCHAR},
+		   #{openUrl,jdbcType=VARCHAR},
+		   #{directFlag,jdbcType=VARCHAR},
+		   to_date(#{startDate,jdbcType=DATE},'yyyy-MM-dd hh24:mi:ss'),
+		   to_date(#{endDate,jdbcType=DATE},'yyyy-MM-dd hh24:mi:ss'),
+		   #{dialogId},
+		   #{actStatus,jdbcType=NUMERIC},
+		   #{classId,jdbcType=NUMERIC},
+		   #{lotteryId,jdbcType=NUMERIC},
+		   #{testUser,jdbcType=VARCHAR},
+		   #{targetUser,jdbcType=VARCHAR},
+		   0,
+		   #{noticeId,jdbcType=NUMERIC},
+		   #{createUser},
+		   #{updateUser},
+		   sysdate,
+		   sysdate)
+	</insert>
+	
+	<update id="updateDialog" parameterType="DialogVO">   
+		update t_wx_dialog t
+		   set 
+		       t.title = #{title,jdbcType=VARCHAR},
+		       t.content = #{content,jdbcType=CLOB},
+		       t.img_url = #{imgUrl,jdbcType=VARCHAR},
+		       t.html_url = #{htmlUrl,jdbcType=VARCHAR},
+		       t.open_url = #{openUrl,jdbcType=VARCHAR},
+		       t.direct_flag = #{directFlag,jdbcType=VARCHAR},
+		       t.start_date = to_date(#{startDate,jdbcType=DATE},'yyyy-MM-dd hh24:mi:ss'),
+		       t.end_date = to_date(#{endDate,jdbcType=DATE},'yyyy-MM-dd hh24:mi:ss'),
+		       t.order_num = #{orderNum,jdbcType=NUMERIC},
+		       t.act_status = #{actStatus,jdbcType=NUMERIC},
+		       t.class_id = #{classId,jdbcType=NUMERIC},
+		       t.lottery_id = #{lotteryId,jdbcType=NUMERIC},
+		       t.test_user = #{testUser,jdbcType=VARCHAR},
+		       t.target_user = #{targetUser,jdbcType=VARCHAR},
+		       t.dialog_status = #{dialogStatus,jdbcType=NUMERIC},
+		       t.notice_id = #{noticeId,jdbcType=NUMERIC},
+		       t.update_user = #{updateUser},
+		       t.update_date = sysdate
+		 where t.dialog_id = #{dialogId,jdbcType=NUMERIC}
+    </update> 
+	<delete id="deleteDialog" parameterType="DialogVO">   
+		delete t_wx_dialog t where t.dialog_id = #{dialogId}
+    </delete>
+    
+    <insert id="createDialogPlatform">
+    	begin
+		<foreach collection="arrId" item="item" index="index" separator=";">
+			insert into t_wx_dialog_platform t
+			  (platform_id, platform_value, dialog_id)
+			values
+			  (seq_wx_dialog_platform.nextval, #{item}, #{dialogId})
+		</foreach>
+		;end; 
+	</insert>
+	
+	<delete id="deleteDialogPlatform">
+		delete t_wx_dialog_platform t
+		where t.dialog_id = #{dialogId}
+	</delete>
+	
+	<select id="findDialogPlatform" resultType="java.lang.String">
+		select t.platform_value
+		  from t_wx_dialog_platform t
+		  where t.dialog_id=#{dialogId,jdbcType=NUMERIC}
+	</select>
+	
+	<insert id="createDialogChannel">
+    	begin
+		<foreach collection="arrId1" item="item" index="index" separator=";">
+			insert into t_wx_dialog_channel t
+			  (channel_id, channel_value, dialog_id)
+			values
+			  (seq_wx_dialog_channel.nextval, #{item}, #{dialogId})
+		</foreach>
+		;end; 
+	</insert>
+	
+	<delete id="deleteDialogChannel">
+		delete t_wx_dialog_channel t
+		where t.dialog_id = #{dialogId}
+	</delete>
+	
+	<select id="findDialogChannel" resultType="java.lang.String">
+		select t.channel_value
+		  from t_wx_dialog_channel t
+		  where t.dialog_id=#{dialogId,jdbcType=NUMERIC}
+	</select>
+	
+	<insert id="createDialogVersion">
+    	begin
+		<foreach collection="arrId2" item="item" index="index" separator=";">
+			insert into t_wx_dialog_version t
+			  (version_id, version_value, dialog_id)
+			values
+			  (seq_wx_dialog_version.nextval, #{item}, #{dialogId})
+		</foreach>
+		;end; 
+	</insert>
+	<delete id="deleteDialogVersion">
+		delete t_wx_dialog_version t
+		where t.dialog_id = #{dialogId}
+	</delete>
+	<select id="findDialogVersion" resultType="java.lang.String">
+		select t.version_value
+		  from t_wx_dialog_version t
+		  where t.dialog_id=#{dialogId,jdbcType=NUMERIC}
+	</select>
+	
+	<select id="findTargetUser" resultType="java.lang.String">
+		select t.target_user from t_wx_dialog_target t where t.dialog_id=#{dialogId,jdbcType=NUMERIC}
+	</select>
+	<insert id="addTargetUser">
+    	begin
+		<foreach collection="targetUserList" item="item" index="index" separator=";">
+			insert into t_wx_dialog_target t
+			  (target_id, target_user, dialog_id)
+			values
+			  (seq_wx_dialog_target.nextval, #{item,jdbcType=VARCHAR}, #{dialogId,jdbcType=NUMERIC})
+		</foreach>
+		;end; 
+	</insert>
+	<delete id="deleteTargetUser">
+		delete t_wx_dialog_target t
+		where t.dialog_id = #{dialogId,jdbcType=NUMERIC}
+	</delete>
+    
+    <select id="listDialogApp" resultMap="dialogVOMap">
+    	select * from (
+	        select t.dialog_id,
+			       t.title,
+			       t.img_url,
+			       t.html_url,
+			       t.open_url,
+			       t.direct_flag,
+			       to_char(t.start_date,'yyyy-MM-dd hh24:mi:ss') start_date,
+			       to_char(t.end_date,'yyyy-MM-dd hh24:mi:ss') end_date,
+			       t.order_num,
+			       t.act_status,
+			       t.class_id,
+			       t.lottery_id,
+			       t.test_user,
+			       t.dialog_status,
+			       t.notice_id,
+			       t.create_user,
+			       t.update_user,
+			       to_char(t.create_date,'yyyy-MM-dd hh24:mi:ss') create_date,
+			       to_char(t.update_date,'yyyy-MM-dd hh24:mi:ss') update_date
+			  from t_wx_dialog t, t_wx_dialog_channel t1, t_wx_dialog_platform t2, t_wx_dialog_version t3
+			 where t.dialog_id = t1.dialog_id
+			   and t.dialog_id = t2.dialog_id
+			   and t.dialog_id = t3.dialog_id
+			   and t1.channel_value = #{channel}
+			   and t2.platform_value = #{platform}
+			   <if test="version!=null and version!=''">
+			       and t3.version_value = #{version}
+			   </if>    
+			   <![CDATA[and (t.start_date <=sysdate and t.end_date >= sysdate)]]>
+		       	   and t.dialog_status = #{dialogStatus}
+			union
+			select t.dialog_id,
+			       t.title,
+			       t.img_url,
+			       t.html_url,
+			       t.open_url,
+			       t.direct_flag,
+			       to_char(t.start_date, 'yyyy-MM-dd hh24:mi:ss') start_date,
+			       to_char(t.end_date, 'yyyy-MM-dd hh24:mi:ss') end_date,
+			       t.order_num,
+			       t.act_status,
+			       t.class_id,
+			       t.lottery_id,
+			       t.test_user,
+			       t.dialog_status,
+			       t.notice_id,
+			       t.create_user,
+			       t.update_user,
+			       to_char(t.create_date, 'yyyy-MM-dd hh24:mi:ss') create_date,
+			       to_char(t.update_date, 'yyyy-MM-dd hh24:mi:ss') update_date
+			  from t_wx_dialog t, t_wx_dialog_target t1
+			 where t.dialog_id = t1.dialog_id
+			   and t1.target_user = #{userName, jdbcType = VARCHAR} 
+			   <![CDATA[
+			   and (t.start_date <= sysdate and t.end_date >= sysdate) ]]>
+			   and t.dialog_status = #{dialogStatus}
+			union
+			select t.dialog_id,
+			       t.title,
+			       t.img_url,
+			       t.html_url,
+			       t.open_url,
+			       t.direct_flag,
+			       to_char(t.start_date, 'yyyy-MM-dd hh24:mi:ss') start_date,
+			       to_char(t.end_date, 'yyyy-MM-dd hh24:mi:ss') end_date,
+			       t.order_num,
+			       t.act_status,
+			       t.class_id,
+			       t.lottery_id,
+			       t.test_user,
+			       t.dialog_status,
+			       t.notice_id,
+			       t.create_user,
+			       t.update_user,
+			       to_char(t.create_date, 'yyyy-MM-dd hh24:mi:ss') create_date,
+			       to_char(t.update_date, 'yyyy-MM-dd hh24:mi:ss') update_date
+			  from t_wx_dialog t
+			 where t.test_user = #{userName, jdbcType = VARCHAR} 
+			 <![CDATA[
+			   and (t.start_date <= sysdate and t.end_date >= sysdate) ]]>
+			   and t.dialog_status = #{dialogStatus}
+		) t order by t.dialog_id desc		   		      
+    </select>
+</mapper>

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecp888.wxms.dao.attach.IAttachmentDAO">
+	<resultMap type="AttachmentVO" id="attachmentVOMap">
+		<id property="attachId" column="attach_id" />
+		<result property="attachName" column="attach_name" />
+		<result property="attachSize" column="attach_size" />
+		<result property="attachPath" column="attach_path" />
+		<result property="attachVersion" column="attach_version" />
+		<result property="attachMoudle" column="attach_moudle" />
+		<result property="attachKey" column="attach_key" />
+		<result property="createUser" column="create_user" />
+		<result property="updateUser" column="update_user" />
+		<result property="createDate" column="create_date" />
+		<result property="updateDate" column="update_date" />
+	</resultMap>
+    <select id="getAttachmentByName" parameterType="AttachmentVO" resultMap="attachmentVOMap">
+		select t.attach_id,
+		       t.attach_name,
+		       t.attach_size,
+		       t.attach_path,
+		       t.attach_version,
+		       t.attach_moudle,
+		       t.attach_key,
+		       t.create_user,
+		       t.update_user,
+		       t.create_date,
+		       t.update_date
+		  from t_app_attachment t where 1=1
+		<if test="attachName!=null and attachName!=''">
+		 	and t.attach_name = #{attachName}
+		</if>
+		<if test="attachMoudle!=null and attachMoudle!=''">
+		 	and t.attach_moudle = #{attachMoudle}
+		</if>
+	</select>
+	
+	<select id="getAttachmentById" parameterType="AttachmentVO" resultMap="attachmentVOMap">
+		select t.attach_id,
+		       t.attach_name,
+		       t.attach_size,
+		       t.attach_path,
+		       t.attach_version,
+		       t.attach_moudle,
+		       t.attach_key,
+		       t.create_user,
+		       t.update_user,
+		       t.create_date,
+		       t.update_date
+		  from t_app_attachment t where 1=1
+		<if test="attachId !=null and attachId !=''">
+		 	and t.attach_id = #{attachId}
+		</if>
+		<if test="attachKey!=null and attachKey!=''">
+		 	and t.attach_key = #{attachKey}
+		</if>
+		<if test="attachMoudle!=null and attachMoudle!=''">
+		 	and t.attach_moudle = #{attachMoudle}
+		</if>		  
+	</select>
+	
+	<select id="countAttachment" parameterType="AttachmentVO" resultType="int">
+		select count(1) 
+		from t_app_attachment t where 1=1
+	    <if test="#{searchValue!=null and searchValue!=''}">
+	    	and lower(t.attach_name)
+		    	 like '%' || lower(trim(#{searchValue,jdbcType=VARCHAR})) || '%'
+	    </if>
+	</select>
+	
+	<select id="listAttachment" resultMap="attachmentVOMap">
+		select * from (
+			select t.*,rownum rm from (
+				select t.attach_id,
+				       t.attach_name,
+				       t.attach_size,
+				       t.attach_path,
+				       t.attach_version,
+				       t.attach_moudle,
+				       t.attach_key,
+				       t.create_user,
+				       t.update_user,
+				       t.create_date,
+				       t.update_date
+			    from t_app_attachment t where 1=1
+			    <if test='_parameter.get("0").searchValue!=null and _parameter.get("0").searchValue!=""'>
+			    	and lower(t.attach_name)
+			    	 =lower(trim(#{0.searchValue,jdbcType=VARCHAR}))
+			    </if>
+			    order by attach_id) t
+		    <![CDATA[where rownum <= #{1.endRecord}
+	    ) where rm > #{1.firstRecord} ]]>
+	</select>
+	
+	<insert id="addAttachment" parameterType="AttachmentVO">
+		<selectKey resultType="java.lang.Integer" order="BEFORE" keyProperty="attachId">
+			select seq_app_attachment.nextval from dual
+		</selectKey>
+		insert into t_app_attachment
+		  (attach_id,
+		   attach_name,
+		   attach_size,
+		   attach_path,
+		   attach_version,
+		   attach_moudle,
+		   attach_key,
+		   create_user,
+		   update_user,
+		   create_date,
+		   update_date)
+		values
+		  (#{attachId,jdbcType=NUMERIC},
+		   #{attachName,jdbcType=VARCHAR},
+		   #{attachSize,jdbcType=NUMERIC},
+		   #{attachPath,jdbcType=VARCHAR},
+		   #{attachVersion,jdbcType=VARCHAR},
+		   #{attachMoudle,jdbcType=VARCHAR},
+		   #{attachKey,jdbcType=NUMERIC},
+		   #{createUser,jdbcType=NUMERIC},
+		   #{updateUser,jdbcType=NUMERIC},
+		   sysdate,
+		   sysdate)		
+	</insert>
+	
+	<delete id="deleteAttachmentById" parameterType="AttachmentVO">   
+		delete t_app_attachment t where t.attach_id = #{attachId}
+    </delete>
+	 
+	<delete id="deleteAttachment" parameterType="AttachmentVO">   
+		delete t_app_attachment t where t.attach_key = #{attachKey} and t.attach_moudle=#{attachMoudle}
+    </delete>
+    
+    <select id="generateAttachNumber" resultType="int">
+    	select seq_app_attachnumber.nextval from dual
+    </select>
+    
+</mapper>

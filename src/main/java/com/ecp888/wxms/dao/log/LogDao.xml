@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecp888.wxms.dao.log.ILogDao">
+	<resultMap type="LogVO" id="logVOMap">
+		<id property="logId" column="log_id" />
+		<result property="operate" column="operate" />
+		<result property="userIp" column="user_ip" />
+		<result property="createUser" column="create_user" />
+		<result property="updateUser" column="update_user" />
+		<result property="createDate" column="create_date" />
+		<result property="updateDate" column="update_date" />	
+		<association property="userVO" column="user_id" javaType="UserVO" resultMap="UserVOResult"/>	
+	</resultMap>
+	<resultMap type="UserVO" id="UserVOResult">
+		<id property="userId" column="user_id" />
+		<result property="userName" column="user_name" />
+	</resultMap>
+	
+	<select id="countLog" resultType="int">
+		select count(1)
+          from (
+				select 
+					t.log_id,
+				    t.operate,
+				    t.user_ip,
+				    t.create_user,
+				    t.update_user,
+				    to_char(t.create_date,'yyyy-MM-dd') create_date,
+				    to_char(t.update_date,'yyyy-MM-dd') update_date
+				from t_app_log t
+		  	) t
+	</select>
+	
+	<select id="listLog" resultMap="logVOMap">
+		select *
+		  from (select t.*, rownum rm from (
+					select 
+						t.log_id,
+					    t.operate,
+					    t.user_ip,
+					    t.create_user,
+					    t.update_user,
+					    to_char(t.create_date,'yyyy-MM-dd') create_date,
+					    to_char(t.update_date,'yyyy-MM-dd') update_date
+					from t_app_log t) t
+			  	<![CDATA[where rownum <= #{1.endRecord})
+			 where rm > #{1.firstRecord}]]>
+	</select>
+	
+	<insert id="addLog">
+		<selectKey resultType="java.lang.Integer" order="BEFORE" keyProperty="logId">
+			select seq_app_log.nextval logId from dual
+		</selectKey>
+		insert into t_app_log
+		  (log_id,
+		   operate,
+		   user_ip,
+		   create_user,
+		   update_user,
+		   create_date,
+		   update_date)
+		values
+		  (#{logId,jdbcType=NUMERIC},
+		   #{operate,jdbcType=VARCHAR},
+		   #{userIp,jdbcType=VARCHAR},
+		   #{createUser,jdbcType=NUMERIC},
+		   #{updateUser,jdbcType=NUMERIC},
+		   sysdate,
+		   sysdate)
+	</insert>
+	
+	<update id="updateLog">   
+		update t_app_log
+		   set user_id = #{userId,jdbcType=NUMERIC},
+		       operate = #{operate,jdbcType=VARCHAR},
+		       user_ip = #{userIp,jdbcType=VARCHAR},
+		       update_user = #{updateUser,jdbcType=NUMERIC},
+		       update_date = sysdate
+		 where log_id = #{logId,jdbcType=NUMERIC}
+    </update> 
+	<delete id="deleteLog">   
+        delete t_app_log where log_id = #{logId,jdbcType=NUMERIC}
+    </delete>
+    
+</mapper>

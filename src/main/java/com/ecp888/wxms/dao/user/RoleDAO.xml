@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecp888.wxms.dao.user.IRoleDAO">
+	<resultMap type="RoleVO" id="roleVOMap">
+		<id property="roleId" column="role_id" />
+		<result property="roleName" column="role_name" />
+		<result property="roleStatus" column="role_status" />
+		<result property="roleStatusName" column="role_status_name" />
+		<result property="roleDescription" column="role_description" />
+		<result property="createUser" column="create_user" />
+		<result property="updateUser" column="update_user" />
+		<result property="createDate" column="create_date" />
+		<result property="updateDate" column="update_date" />
+	</resultMap>
+    <select id="getRoleByName" parameterType="RoleVO" resultMap="roleVOMap">
+		select role_id,
+	       role_name,
+	       role_description,
+	       role_status,
+	       create_user,
+	       update_user,
+	       create_date,
+	       update_date
+	  from t_app_role t
+	  where t.role_name = #{roleName}
+	</select>
+	
+	<select id="getRoleById" parameterType="RoleVO" resultMap="roleVOMap">
+		select role_id,
+	       role_name,
+	       role_description,
+	       role_status,
+	       create_user,
+	       update_user,
+	       create_date,
+	       update_date
+	  from t_app_role t
+	  where t.role_id = #{roleId}
+	</select>
+	
+	<select id="countRole" parameterType="RoleVO" resultType="int">
+		select count(1) 
+		from t_app_role t where 1=1
+	    <if test="#{searchValue!=null and searchValue!=''}">
+	    	and lower(t.role_name || '|' || t.role_description)
+		    	 like '%' || lower(trim(#{searchValue,jdbcType=VARCHAR})) || '%'
+	    </if>
+	</select>
+	
+	<select id="listRole" resultMap="roleVOMap">
+		select * from (
+			select t.*,rownum rm from (
+				select role_id,
+				       role_name,
+				       role_description,
+				       role_status,
+				       decode(role_status,0,'禁用',1,'启用','启用') role_status_name,
+				       create_user,
+				       update_user,
+				       create_date,
+				       update_date
+			    from t_app_role t where 1=1
+			    <if test='_parameter.get("0").searchValue!=null and _parameter.get("0").searchValue!=""'>
+			    	and lower(t.role_name)
+			    	 =lower(trim(#{0.searchValue,jdbcType=VARCHAR}))
+			    </if>
+			    order by role_id) t
+		    <![CDATA[where rownum <= #{1.endRecord}
+	    ) where rm > #{1.firstRecord} ]]>
+	</select>
+	
+	<insert id="addRole" parameterType="RoleVO">
+		insert into t_app_role
+		  (role_id,
+		   role_name,
+		   role_description,
+		   role_status,
+		   create_user,
+		   update_user,
+		   create_date,
+		   update_date)
+		values
+		  (seq_app_role.nextval,
+		   #{roleName,jdbcType=VARCHAR},
+		   #{roleDescription,jdbcType=VARCHAR},
+		   1,
+		   #{createUser,jdbcType=NUMERIC},
+		   #{updateUser,jdbcType=NUMERIC},
+		   sysdate,
+		   sysdate)		
+	</insert>
+	
+	<update id="updateRole" parameterType="RoleVO">   
+		<![CDATA[
+		update t_app_role
+		   set 
+		       role_name        = #{roleName,jdbcType=VARCHAR},
+		       role_description = #{roleDescription,jdbcType=VARCHAR},
+		       role_status      = #{roleStatus,jdbcType=NUMERIC},
+		       update_user = #{updateUser,jdbcType=VARCHAR},
+		       update_date = sysdate
+		 where role_id = #{roleId}
+		 ]]>
+    </update> 
+	<delete id="deleteRole" parameterType="RoleVO">   
+		delete t_app_role t where t.role_id = #{roleId}
+    </delete>
+    
+    <select id="lookupRole" resultMap="roleVOMap">
+    	select 
+    		t.role_id, t.role_name 
+    	from t_app_role t where t.role_status = 1
+    </select>
+    
+    <select id="currentRole" resultMap="roleVOMap">
+    	select t.role_id, r.role_name
+		  from t_app_user_role_program t, t_app_role r
+		 where t.role_id=r.role_id
+		 and r.role_status = 1
+		 and t.user_id = #{userId,jdbcType=NUMERIC}
+    </select>
+</mapper>

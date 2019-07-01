@@ -1,0 +1,184 @@
+html, body {
+    margin: 0px;
+    padding: 0px;
+    border: 0px none;
+    width: 100%;
+    height: 100%;
+    font-size:12px;
+    font-family:Tahoma,Verdana,宋;
+    /**overflow: hidden;**/
+}
+
+input{
+	font-size:12px;
+	background-color:expression((this.readOnly && this.readOnly==true)?"#EAEAEA":"");}
+
+textarea{
+	font-size:12px;
+	background-color:expression((this.readOnly && this.readOnly==true)?"#EAEAEA":"");}
+
+/**检索输入框**/
+input.searchInput{
+	/*width: 170px;*/
+    /*height: 14px;*/
+    background: url('../images/search.gif') no-repeat scroll 2px center #FFF;
+    border:1px solid #999;  /*#CCC*/
+	padding:2px 2px 2px 20px; 
+	color: #999;
+    line-height: 14px;
+    vertical-align: middle;
+}
+
+/**表单输入区**/
+.table-input {width:100%; border-collapse:collapse;border:none;text-align: left;}
+.table-input-td{ border:solid 1px #5AB0E2/*#ccc*/; padding:4px;}
+.table-input-label{ 
+	border:solid 1px #5AB0E2/*#ccc #5AB0E2 */; 
+	background-color:#F2FAFF/*#EAEAEA #F2FAFF #E8F3FD*/; 
+	padding:4px;
+	font-size: 12px;font-weight: bold; padding:0 0 0 12px; line-height:24px;}
+.button-submit,.button-reset{width:80px; float:left; margin-left:10px; padding-bottom:2px;}
+.verify-tip{ left:230px; top:120px;}
+
+/**表格列表区**/
+table{
+	font-size:12px;
+    table-layout:fixed;
+    empty-cells:show; 
+    border-collapse: collapse;
+    margin:0 auto;
+}
+td{
+    height:20px;
+    word-break : normal | break-all | keep-all;
+    word-wrap: break-word;
+}
+h1,h2,h3{
+    font-size:12px;
+    margin:0;
+    padding:0;
+}
+.title { background: #FFF; border: 1px solid #9DB3C5; padding: 1px; width:90%;margin:20px auto; }
+.title h1 { line-height: 31px; text-align:center;  background: #2F589C url(th_bg2.gif);
+	background-repeat: repeat-x; background-position: 0 0; color: #FFF; }
+.title th, .title td { border: 1px solid #CAD9EA; padding: 5px; }
+
+table.t1{
+    border:1px solid #cad9ea;
+    color:#666;
+}
+table.t1 th {
+    background-image: url(th_bg1.gif);
+    background-repeat::repeat-x;
+    height:30px;
+}
+table.t1 td,table.t1 th{
+    border:1px solid #cad9ea;
+    padding:0 1em 0;
+}
+table.t1 tr.a1{
+    background-color:#f5fafe;
+}
+
+table.t2{
+    border:1px solid #9db3c5;
+    color:#666;
+}
+table.t2 th {
+    background-image: url(th_bg2.gif);
+    background-repeat::repeat-x;
+    height:30px;
+    color:#fff;
+}
+table.t2 td{
+    border:1px dotted #cad9ea;
+    padding:0 2px 0;
+}
+table.t2 th{
+    border:1px solid #a7d1fd;
+    padding:0 2px 0;
+}
+table.t2 tr.a1{
+    background-color:#e8f3fd;
+}
+
+table.t3{
+    border:1px solid #fc58a6;
+    color:#720337;
+}
+table.t3 th {
+    background-image: url(th_bg3.gif);
+    background-repeat::repeat-x;
+    height:30px;
+    color:#35031b;
+}
+table.t3 td{
+    border:1px dashed #feb8d9;
+    padding:0 1.5em 0;
+}
+table.t3 th{
+    border:1px solid #b9f9dc;
+    padding:0 2px 0;
+}
+table.t3 tr.a1{
+    background-color:#fbd8e8;
+}
+
+/**validate信息提示区**/
+label.error{
+	position:absolute;
+	display:block;
+	z-index:900;
+	background:#ffcc66;
+	box-shadow:0px 0px 4px #000;
+	-moz-box-shadow:0px 0px 4px #000;
+	-webkit-box-shadow:0px 0px 4px #000;
+	padding:3px 6px;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	webkit-border-radius:4px;
+	filter:alpha(opacity:80);
+	opacity:0.80;
+	-width:150px;
+	white-space:normal !important;
+	max-width:400px;
+	min-width:100px;
+	overflow:visible !important;
+	word-break:break-all !important;
+	min-height:16px;
+	line-height:16px !important;
+	width:auto !important;
+}
+label.error span.light{
+	color:red;
+	font-weight:bold;
+}
+input.error,textarea.error,select.error{
+	background-color:#ffcc66;
+	border-color:#ff6600;
+	filter:alpha(opacity:80);
+	opacity:0.80;
+}
+
+/**Push自定义推送时间**/
+#selected-tags a.selected-tag {
+	background: none repeat scroll 0 0 #efefef;
+	border: 1px solid #ccc;
+	border-radius: 15px;
+	color: #403f3f;
+	display: inline-block;
+	font-size: 11px;
+	line-height: 16px;
+	margin: 5px 10px 0 0;
+	padding: 2px 10px;
+	text-decoration: none;
+	transition: padding 0.1s linear 0s;
+}
+#selected-tags a.selected-tag:hover {
+	background-image:
+		url("../images/bg-cancel.png");
+	background-postion: 3px 3px;
+	background-repeat: no-repeat;
+	cursor: pointer;
+	padding-left: 18px;
+}

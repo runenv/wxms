@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecp888.wxms.dao.bulletin.IBulletinDAO">
+	<resultMap type="BulletinVO" id="bulletinVOMap">
+		<id property="bulletinId" column="bulletin_id" />
+		<result property="title" column="title" />
+		<result property="content" column="content" jdbcType="CLOB" javaType = "java.lang.String" 
+			typeHandler="org.apache.ibatis.type.ClobTypeHandler" />
+		<result property="imgUrl" column="img_url" />
+		<result property="htmlUrl" column="html_url" />
+		<result property="openUrl" column="open_url" />
+		<result property="directFlag" column="direct_flag" />
+		<result property="startDate" column="start_date" />
+		<result property="endDate" column="end_date" />
+		<result property="orderNum" column="order_num" />
+		<result property="actStatus" column="act_status" />
+		<result property="classId" column="class_id" />
+		<result property="lotteryId" column="lottery_id" />
+		<result property="titleWap" column="title_wap" />
+		<result property="testUser" column="test_user" />
+		<result property="targetUser" column="target_user" />
+		<result property="bulletinStatus" column="bulletin_status" />
+		<result property="createUser" column="create_user" />
+		<result property="updateUser" column="update_user" />
+		<result property="createDate" column="create_date" />
+		<result property="updateDate" column="update_date" />
+	</resultMap>
+    <select id="getBulletinByName" resultMap="bulletinVOMap">
+		select t.bulletin_id,
+		       t.title,
+		       t.content,
+		       t.img_url,
+		       t.html_url,
+		       t.open_url,
+		       t.direct_flag,
+		       to_char(t.start_date,'yyyy-MM-dd hh24:mi:ss') start_date,
+		       to_char(t.end_date,'yyyy-MM-dd hh24:mi:ss') end_date,
+		       t.order_num,
+		       t.act_status,
+		       t.class_id,
+		       t.lottery_id,
+		       t.title_wap,
+		       t.test_user,
+		       t.target_user,
+		       t.bulletin_status,
+		       t.create_user,
+		       t.update_user,
+		       to_char(t.create_date,'yyyy-MM-dd hh24:mi:ss') create_date,
+		       to_char(t.update_date,'yyyy-MM-dd hh24:mi:ss') update_date
+		  from t_wx_bulletin t
+	  where t.title = #{title}
+	</select>
+	
+	<select id="getBulletinById" resultMap="bulletinVOMap">
+		select t.bulletin_id,
+		       t.title,
+		       t.content,
+		       t.img_url,
+		       t.html_url,
+		       t.open_url,
+		       t.direct_flag,
+		       to_char(t.start_date,'yyyy-MM-dd hh24:mi:ss') start_date,
+		       to_char(t.end_date,'yyyy-MM-dd hh24:mi:ss') end_date,
+		       t.order_num,
+		       t.act_status,
+		       t.class_id,
+		       t.lottery_id,
+		       t.title_wap,
+		       t.test_user,
+		       t.target_user,
+		       t.bulletin_status,
+		       t.create_user,
+		       t.update_user,
+		       to_char(t.create_date,'yyyy-MM-dd hh24:mi:ss') create_date,
+		       to_char(t.update_date,'yyyy-MM-dd hh24:mi:ss') update_date
+		  from t_wx_bulletin t
+		where t.bulletin_id = #{bulletinId}
+	</select>
+	
+	<select id="countBulletin" resultType="int">
+		select count(1) 
+		from t_wx_bulletin t where 1=1
+	    <if test="#{searchValue!=null and searchValue!=''}">
+	    	and lower(t.title)
+		    	 like '%' || lower(trim(#{searchValue,jdbcType=VARCHAR})) || '%'
+	    </if>
+	</select>
+	
+	<select id="listBulletin" resultMap="bulletinVOMap">
+		select * from (
+			select t.*,rownum rm from (
+				select t.bulletin_id,
+				       t.title,
+				       t.content,
+				       t.img_url,
+				       t.html_url,
+				       t.open_url,
+				       t.direct_flag,
+				       to_char(t.start_date,'yyyy-MM-dd hh24:mi:ss') start_date,
+			       	   to_char(t.end_date,'yyyy-MM-dd hh24:mi:ss') end_date,
+				       t.order_num,
+				       t.act_status,
+				       t.class_id,
+				       t.lottery_id,
+				       t.title_wap,
+				       t.test_user,
+				       t.target_user,
+				       t.bulletin_status,
+				       t.create_user,
+				       t.update_user,
+				       to_char(t.create_date,'yyyy-MM-dd hh24:mi:ss') create_date,
+			           to_char(t.update_date,'yyyy-MM-dd hh24:mi:ss') update_date
+				  from t_wx_bulletin t where 1=1
+			    <if test='_parameter.get("0").searchValue!=null and _parameter.get("0").searchValue!=""'>
+			    	and lower(t.title)
+			    	 like '%' || lower(trim(#{0.searchValue,jdbcType=VARCHAR})) || '%'
+			    </if>
+			    order by t.order_num desc) t
+		    <![CDATA[where rownum <= #{1.endRecord}
+	    ) where rm > #{1.firstRecord} ]]>
+	</select>
+	
+	<insert id="addBulletin">
+		<selectKey resultType="java.lang.Integer" order="BEFORE" keyProperty="bulletinId">
+			select seq_wx_bulletin.nextval from dual
+		</selectKey>
+		insert into t_wx_bulletin t
+		  (bulletin_id,
+		   title,
+		   content,
+		   img_url,
+		   html_url,
+		   open_url,
+		   direct_flag,
+		   start_date,
+		   end_date,
+		   order_num,
+		   act_status,
+		   class_id,
+		   lottery_id,
+		   title_wap,
+		   test_user,
+		   target_user,
+		   bulletin_status,
+		   create_user,
+		   update_user,
+		   create_date,
+		   update_date)
+		values
+		  (#{bulletinId},
+		   #{title,jdbcType=VARCHAR},
+		   #{content,jdbcType=CLOB},
+		   #{imgUrl,jdbcType=VARCHAR},
+		   #{htmlUrl,jdbcType=VARCHAR},
+		   #{openUrl,jdbcType=VARCHAR},
+		   #{directFlag,jdbcType=VARCHAR},
+		   to_date(#{startDate,jdbcType=DATE},'yyyy-MM-dd hh24:mi:ss'),
+		   to_date(#{endDate,jdbcType=DATE},'yyyy-MM-dd hh24:mi:ss'),
+		   #{bulletinId},
+		   #{actStatus,jdbcType=NUMERIC},
+		   #{classId,jdbcType=NUMERIC},
+		   #{lotteryId,jdbcType=NUMERIC},
+		   #{titleWap,jdbcType=VARCHAR},
+		   #{testUser,jdbcType=VARCHAR},
+		   #{targetUser,jdbcType=VARCHAR},
+		   0,
+		   #{createUser},
+		   #{updateUser},
+		   sysdate,
+		   sysdate)
+	</insert>
+	
+	<update id="updateBulletin" parameterType="BulletinVO">   
+		update t_wx_bulletin t
+		   set 
+		       t.title = #{title,jdbcType=VARCHAR},
+		       t.content = #{content,jdbcType=CLOB},
+		       t.img_url = #{imgUrl,jdbcType=VARCHAR},
+		       t.html_url = #{htmlUrl,jdbcType=VARCHAR},
+		       t.open_url = #{openUrl,jdbcType=VARCHAR},
+		       t.direct_flag = #{directFlag,jdbcType=VARCHAR},
+		       t.start_date = to_date(#{startDate,jdbcType=DATE},'yyyy-MM-dd hh24:mi:ss'),
+		       t.end_date = to_date(#{endDate,jdbcType=DATE},'yyyy-MM-dd hh24:mi:ss'),
+		       t.order_num = #{orderNum,jdbcType=NUMERIC},
+		       t.act_status = #{actStatus,jdbcType=NUMERIC},
+		       t.class_id = #{classId,jdbcType=NUMERIC},
+		       t.lottery_id = #{lotteryId,jdbcType=NUMERIC},
+		       t.title_wap = #{titleWap,jdbcType=VARCHAR},
+		       t.test_user = #{testUser,jdbcType=VARCHAR},
+		       t.target_user = #{targetUser,jdbcType=VARCHAR},
+		       t.bulletin_status = #{bulletinStatus,jdbcType=NUMERIC},
+		       t.update_user = #{updateUser},
+		       t.update_date = sysdate
+		 where t.bulletin_id = #{bulletinId,jdbcType=NUMERIC}
+    </update> 
+	<delete id="deleteBulletin" parameterType="BulletinVO">   
+		delete t_wx_bulletin t where t.bulletin_id = #{bulletinId}
+    </delete>
+    
+    <insert id="createBulletinPlatform">
+    	begin
+		<foreach collection="arrId" item="item" index="index" separator=";">
+			insert into t_wx_bulletin_platform t
+			  (platform_id, platform_value, bulletin_id)
+			values
+			  (seq_wx_bulletin_platform.nextval, #{item}, #{bulletinId})
+		</foreach>
+		;end; 
+	</insert>
+	
+	<delete id="deleteBulletinPlatform">
+		delete t_wx_bulletin_platform t
+		where t.bulletin_id = #{bulletinId}
+	</delete>
+	
+	<select id="findBulletinPlatform" resultType="java.lang.String">
+		select t.platform_value
+		  from t_wx_bulletin_platform t
+		  where t.bulletin_id=#{bulletinId,jdbcType=NUMERIC}
+	</select>
+	
+	<insert id="createBulletinChannel">
+    	begin
+		<foreach collection="arrId1" item="item" index="index" separator=";">
+			insert into t_wx_bulletin_channel t
+			  (channel_id, channel_value, bulletin_id)
+			values
+			  (seq_wx_bulletin_channel.nextval, #{item}, #{bulletinId})
+		</foreach>
+		;end; 
+	</insert>
+	
+	<delete id="deleteBulletinChannel">
+		delete t_wx_bulletin_channel t
+		where t.bulletin_id = #{bulletinId}
+	</delete>
+	
+	<select id="findBulletinChannel" resultType="java.lang.String">
+		select t.channel_value
+		  from t_wx_bulletin_channel t
+		  where t.bulletin_id=#{bulletinId,jdbcType=NUMERIC}
+	</select>
+	
+	<select id="findTargetUser" resultType="java.lang.String">
+		select t.target_user from t_wx_bulletin_target t where t.bulletin_id=#{bulletinId,jdbcType=NUMERIC}
+	</select>
+	<insert id="addTargetUser">
+    	begin
+		<foreach collection="targetUserList" item="item" index="index" separator=";">
+			insert into t_wx_bulletin_target t
+			  (target_id, target_user, bulletin_id)
+			values
+			  (seq_wx_bulletin_target.nextval, #{item,jdbcType=VARCHAR}, #{bulletinId,jdbcType=NUMERIC})
+		</foreach>
+		;end; 
+	</insert>
+	<delete id="deleteTargetUser">
+		delete t_wx_bulletin_target t
+		where t.bulletin_id = #{bulletinId,jdbcType=NUMERIC}
+	</delete>
+    
+    <select id="listBulletinApp" resultMap="bulletinVOMap">
+    	select t.bulletin_id,
+		       t.title,
+		       t.content,
+		       t.img_url,
+		       t.html_url,
+		       t.open_url,
+		       t.direct_flag,
+		       to_char(t.start_date,'yyyy-MM-dd hh24:mi:ss') start_date,
+		       to_char(t.end_date,'yyyy-MM-dd hh24:mi:ss') end_date,
+		       t.order_num,
+		       t.act_status,
+		       t.class_id,
+		       t.lottery_id,
+		       t.title_wap,
+		       t.test_user,
+		       t.bulletin_status,
+		       t.create_user,
+		       t.update_user,
+		       to_char(t.create_date,'yyyy-MM-dd hh24:mi:ss') create_date,
+		       to_char(t.update_date,'yyyy-MM-dd hh24:mi:ss') update_date
+		  from t_wx_bulletin t, t_wx_bulletin_channel t1, t_wx_bulletin_platform t2
+		 where t.bulletin_id = t1.bulletin_id
+		   and t.bulletin_id = t2.bulletin_id
+		   and t1.channel_value = #{channel}
+		   and t2.platform_value = #{platform}
+    </select>
+</mapper>

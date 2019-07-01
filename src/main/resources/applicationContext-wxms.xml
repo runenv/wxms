@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans" 
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+      xmlns:aop="http://www.springframework.org/schema/aop"      
+      xmlns:tx="http://www.springframework.org/schema/tx"       
+      xmlns:jdbc="http://www.springframework.org/schema/jdbc"       
+      xmlns:context="http://www.springframework.org/schema/context"
+      xmlns:jaxws="http://cxf.apache.org/jaxws" 
+      xmlns:jaxrs="http://cxf.apache.org/jaxrs"     
+      xsi:schemaLocation="       
+      http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd       
+      http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd       
+      http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd       
+      http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd       
+      http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd     
+      http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+      http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd"
+     default-autowire="byName">
+	
+	<jaxrs:server id="catalogRestService" address="/catalog">
+		<jaxrs:serviceBeans>
+			<ref bean="catalogService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:extensionMappings>  
+		<entry key="json" value="application/json"/>
+		<entry key="feed" value="application/atom+xml"/>  
+		<entry key="xml" value="application/xml"/>  
+		<entry key="html" value="text/html"/>  
+		</jaxrs:extensionMappings>
+	</jaxrs:server>
+	
+	<jaxrs:server id="dictRestService" address="/lookup">
+		<jaxrs:serviceBeans>
+			<ref bean="dictionaryService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:extensionMappings>  
+		<entry key="json" value="application/json"/>
+		<entry key="feed" value="application/atom+xml"/>  
+		<entry key="xml" value="application/xml"/>  
+		<entry key="html" value="text/html"/>  
+		</jaxrs:extensionMappings>
+	</jaxrs:server>
+	
+	<jaxrs:server id="userRestService" address="/user">
+		<jaxrs:serviceBeans>
+			<ref bean="userService" />
+			<ref bean="roleService" />
+			<ref bean="roleRightService" />
+			<ref bean="userRoleProgramService" />
+			<ref bean="deptService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:extensionMappings>  
+		<entry key="json" value="application/json"/>
+		<entry key="feed" value="application/atom+xml"/>  
+		<entry key="xml" value="application/xml"/>  
+		<entry key="html" value="text/html"/>  
+		</jaxrs:extensionMappings>
+	</jaxrs:server>
+	
+	<jaxrs:server id="businessRestService" address="/business">
+		<jaxrs:serviceBeans>
+			<ref bean="noticeService" />
+			<ref bean="advertService" />
+			<ref bean="bulletinService" />
+			<ref bean="pushService" />
+			<ref bean="dialogService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:extensionMappings>  
+		<entry key="json" value="application/json"/>
+		<entry key="feed" value="application/atom+xml"/>  
+		<entry key="xml" value="application/xml"/>  
+		<entry key="html" value="text/html"/>  
+		</jaxrs:extensionMappings>
+	</jaxrs:server>
+	
+</beans>

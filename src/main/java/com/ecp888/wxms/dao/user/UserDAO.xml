@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecp888.wxms.dao.user.IUserDAO">
+	<resultMap type="UserVO" id="userVOMap">
+		<id property="userId" column="user_id" />
+		<result property="userName" column="user_name" />
+		<result property="userPassword" column="user_password" />
+		<result property="userSex" column="user_sex" />
+		<result property="userSexName" column="user_sex_name" />
+		<result property="userEmail" column="user_email" />
+		<result property="userPhone" column="user_phone" />		
+		<result property="userMobile" column="user_mobile" />		
+		<result property="userFax" column="user_fax" />		
+		<result property="userAddress" column="user_address" />		
+		<result property="userZip" column="user_zip" />		
+		<result property="userStatus" column="user_status" />		
+		<result property="userBirthDay" column="user_birthDay" />		
+		<result property="userAge" column="user_age" />		
+		<association property="deptVO" column="dept_id" javaType="DeptVO" resultMap="deptVOMap"/>	
+	</resultMap>
+	<resultMap type="DeptVO" id="deptVOMap">
+		<id property="deptId" column="dept_id" />
+		<result property="deptName" column="dept_name" />
+		<result property="deptStatus" column="dept_status" />
+		<result property="deptStatusName" column="dept_status_name" />
+		<result property="description" column="description" />
+	</resultMap>
+
+    <select id="findUserByName" parameterType="UserVO" resultMap="userVOMap">
+		select t.user_id,
+	       t.user_name,
+	       t.user_password,
+	       t.user_sex,
+	       t.user_age,
+	       t.user_email,
+	       t.user_phone,
+	       t.user_mobile,
+	       t.user_fax,
+	       t.user_address,
+	       t.user_zip,
+	       to_char(t.user_birthday,'yyyy-MM-dd') user_birthday,
+	       t.user_status
+	  from t_app_user t where t.user_name = #{userName}
+	</select>
+	
+	<select id="getUserById" parameterType="UserVO" resultMap="userVOMap">
+		select t.user_id,
+	         t.user_name,
+	         t.user_password,
+	         t.user_sex,
+	         t.user_age,
+	         t.user_email,
+	         t.user_phone,
+	         t.user_mobile,
+	         t.user_fax,
+	         t.user_address,
+	         t.user_zip,
+	         to_char(t.user_birthday,'yyyy-MM-dd') user_birthday,
+	         t.user_status
+	    from t_app_user t where t.user_id = #{userId}
+	</select>
+	
+	<select id="countUser" resultType="int">
+		select count(1) 
+		from t_app_user t where 1=1
+	    <if test="#{searchValue!=null and searchValue!=''}">
+	    	and lower(t.user_name || '|' || t.user_phone || '|' || t.user_mobile || '|' || t.user_fax || '|' || t.user_address || '|' || t.user_zip) 
+	    	like '%' || lower(trim(#{searchValue,jdbcType=VARCHAR})) || '%'
+	    </if>
+	</select>
+	
+	<select id="listUser" resultMap="userVOMap">
+		select * from (
+			select t.*,rownum rm from (
+				select t.user_id,
+			         t.user_name,
+			         t.user_password,
+			         t.user_sex,
+			         t.user_age,
+			         decode(t.user_sex,1,'男','女') user_sex_name,
+			         t.user_email,
+			         t.user_phone,
+			         t.user_mobile,
+			         t.user_fax,
+			         t.user_address,
+			         t.user_zip,
+			         t.user_status
+			    from t_app_user t where 1=1
+			    <if test='_parameter.get("0").searchValue!=null and _parameter.get("0").searchValue!=""'>
+			    	and lower(t.user_name || '|' || t.user_phone || '|' || t.user_mobile || '|' || t.user_fax || '|' || t.user_address || '|' || t.user_zip)
+			    	 like '%' || lower(trim(#{0.searchValue,jdbcType=VARCHAR})) || '%'
+			    </if>
+			    order by user_id) t
+		    <![CDATA[where rownum <= #{1.endRecord}
+	    ) where rm > #{1.firstRecord} ]]>
+	</select>
+	
+	<insert id="addUser" parameterType="UserVO">
+		insert into t_app_user
+		  (user_id,
+		   user_name,
+		   user_password,
+		   user_sex,
+		   user_email,
+		   user_phone,
+		   user_mobile,
+		   user_fax,
+		   user_address,
+		   user_zip,
+		   user_status,
+		   user_age,
+		   user_birthDay,
+		   dept_id,
+		   create_user,
+		   update_user,
+		   create_date,
+		   update_date)
+		values
+		  (seq_app_user.nextval,
+		   #{userName,jdbcType=VARCHAR},
+		   #{userPassword,jdbcType=VARCHAR},
+		   #{userSex,jdbcType=VARCHAR},
+		   #{userEmail,jdbcType=VARCHAR},
+		   #{userPhone,jdbcType=VARCHAR},
+		   #{userMobile,jdbcType=VARCHAR},
+		   #{userFax,jdbcType=VARCHAR},
+		   #{userAddress,jdbcType=VARCHAR},
+		   #{userZip,jdbcType=VARCHAR},
+		   1,
+		   #{userAge,jdbcType=NUMERIC},
+		   to_date(#{userBirthDay,jdbcType=DATE},'yyyy-MM-dd'),
+		   #{deptVO.deptId,jdbcType=NUMERIC},
+		   #{createUser,jdbcType=NUMERIC},
+		   #{updateUser,jdbcType=NUMERIC},
+		   sysdate,
+		   sysdate)
+	</insert>
+	
+	<update id="updateUser" parameterType="UserVO">   
+		<![CDATA[
+        update t_app_user
+		   set user_name = #{userName,jdbcType=VARCHAR},
+		   	   user_password = #{userPassword,jdbcType=VARCHAR},	
+		       user_sex = #{userSex,jdbcType=NUMERIC},
+		       user_email = #{userEmail,jdbcType=VARCHAR},
+		       user_phone = #{userPhone,jdbcType=VARCHAR},
+		       user_mobile = #{userMobile,jdbcType=VARCHAR},
+		       user_fax = #{userFax,jdbcType=VARCHAR},
+		       user_address = #{userAddress,jdbcType=VARCHAR},
+		       user_zip = #{userZip,jdbcType=VARCHAR},
+		       user_status = #{userStatus,jdbcType=NUMERIC},
+		       user_age=#{userAge,jdbcType=NUMERIC},
+		       user_birthDay=to_date(#{userBirthDay,jdbcType=DATE},'yyyy-MM-dd'),
+		       dept_id = #{deptVO.deptId,jdbcType=NUMERIC},
+		       update_user = #{updateUser,jdbcType=VARCHAR},
+		       update_date = sysdate
+		 where user_id = #{userId}   
+		 ]]>
+    </update> 
+	<delete id="deleteUser" parameterType="UserVO">   
+        delete t_app_user t where t.user_id = #{userId}
+    </delete>
+    
+</mapper>

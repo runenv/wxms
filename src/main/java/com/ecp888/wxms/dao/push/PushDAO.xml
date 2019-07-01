@@ -1,0 +1,542 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecp888.wxms.dao.push.IPushDAO">
+	<resultMap type="PushVO" id="pushVOMap">
+		<id property="pushId" column="push_id" />
+		<result property="title" column="title" />
+		<result property="content" column="content" jdbcType="CLOB" javaType = "java.lang.String" 
+			typeHandler="org.apache.ibatis.type.ClobTypeHandler" />
+		<result property="imgUrl" column="img_url" />
+		<result property="htmlUrl" column="html_url" />
+		<result property="openUrl" column="open_url" />
+		<result property="directFlag" column="direct_flag" />
+		<result property="startDate" column="start_date" />
+		<result property="endDate" column="end_date" />
+		<result property="pushDate" column="push_date" />
+		<result property="taskId" column="task_id" />
+		<result property="orderNum" column="order_num" />
+		<result property="actStatus" column="act_status" />
+		<result property="classId" column="class_id" />
+		<result property="lotteryId" column="lottery_id" />
+		<result property="pushType" column="push_type" />
+		<result property="testUser" column="test_user" />
+		<result property="targetUser" column="target_user" />
+		<result property="pushStatus" column="push_status" />
+		<result property="noticeId" column="notice_id" />
+		<result property="createUser" column="create_user" />
+		<result property="updateUser" column="update_user" />
+		<result property="createDate" column="create_date" />
+		<result property="updateDate" column="update_date" />
+	</resultMap>
+	
+	<resultMap type="com.ecp888.wxms.vo.push.PushStatisticVO" id="pushStatisticVOMap">
+		<id property="statisticId" column="statistic_id" />
+		<result property="pushId" column="push_id" />		    
+		<result property="msgId" column="msg_id" />		    
+		<result property="platform" column="platform" />		    
+		<result property="version" column="version" />		    
+		<result property="pushCount" column="push_count" />		    
+		<result property="userCount" column="user_count" />		    
+		<result property="hitCount" column="hit_count" />
+		<result property="update_flag" column="updateFlag" />
+		<result property="createUser" column="create_user" />
+		<result property="updateUser" column="update_user" />
+		<result property="createDate" column="create_date" />
+		<result property="updateDate" column="update_date" />		    
+	</resultMap>
+	
+	<resultMap type="com.ecp888.wxms.vo.push.PushRegisterVO" id="pushRegisterVOMap">
+		<id property="registerId" column="register_id" />
+		<result property="targetUser" column="target_user" />	
+		<result property="registrationId" column="registrationid" />	
+	</resultMap>		    
+	
+    <select id="getPushByName" resultMap="pushVOMap">
+		select t.push_id,
+		       t.title,
+		       t.content,
+		       t.img_url,
+		       t.html_url,
+		       t.open_url,
+		       t.direct_flag,
+		       to_char(nvl(t.start_date,''),'yyyy-MM-dd hh24:mi:ss') start_date,
+		       to_char(nvl(t.end_date,''),'yyyy-MM-dd hh24:mi:ss') end_date,
+		       to_char(nvl(t.push_date,''),'yyyy-MM-dd hh24:mi:ss') push_date,
+		       t.order_num,
+		       t.act_status,
+		       t.class_id,
+		       t.lottery_id,
+		       t.push_type,
+		       t.test_user,
+		       t.target_user,
+		       t.push_status,
+		       t.notice_id,
+		       t.create_user,
+		       t.update_user,
+		       to_char(t.create_date,'yyyy-MM-dd hh24:mi:ss') create_date,
+		       to_char(t.update_date,'yyyy-MM-dd hh24:mi:ss') update_date
+		  from t_wx_push t
+	  where t.title = #{title}
+	</select>
+	
+	<select id="getPushById" resultMap="pushVOMap">
+		select t.push_id,
+		       t.title,
+		       t.content,
+		       t.img_url,
+		       t.html_url,
+		       t.open_url,
+		       t.direct_flag,
+		       to_char(nvl(t.start_date,''),'yyyy-MM-dd hh24:mi:ss') start_date,
+		       to_char(nvl(t.end_date,''),'yyyy-MM-dd hh24:mi:ss') end_date,
+		       to_char(nvl(t.push_date,''),'yyyy-MM-dd hh24:mi:ss') push_date,
+		       t.order_num,
+		       t.act_status,
+		       t.class_id,
+		       t.lottery_id,
+		       t.push_type,
+		       t.test_user,
+		       t.target_user,
+		       t.push_status,
+		       t.notice_id,
+		       t.create_user,
+		       t.update_user,
+		       to_char(t.create_date,'yyyy-MM-dd hh24:mi:ss') create_date,
+		       to_char(t.update_date,'yyyy-MM-dd hh24:mi:ss') update_date
+		  from t_wx_push t
+		where t.push_id = #{pushId}
+	</select>
+	
+	<select id="countPush" resultType="int">
+		select count(1) 
+		from t_wx_push t where 1=1
+	    <if test="searchValue!=null and searchValue!=''">
+	    	and lower(t.title)
+		    	 like '%' || lower(trim(#{searchValue,jdbcType=VARCHAR})) || '%'
+	    </if>
+	</select>
+	
+	<select id="listPush" resultMap="pushVOMap">
+		select * from (
+			select t.*,rownum rm from (
+				select t.push_id,
+				       t.title,
+				       t.content,
+				       t.img_url,
+				       t.html_url,
+				       t.open_url,
+				       t.direct_flag,
+				       to_char(nvl(t.start_date,''),'yyyy-MM-dd hh24:mi:ss') start_date,
+			       	   to_char(nvl(t.end_date,''),'yyyy-MM-dd hh24:mi:ss') end_date,
+			       	   to_char(nvl(t.push_date,''),'yyyy-MM-dd hh24:mi:ss') push_date,
+				       t.order_num,
+				       t.act_status,
+				       t.class_id,
+				       t.lottery_id,
+				       t.push_type,
+				       t.test_user,
+				       t.target_user,
+				       t.push_status,
+				       t.notice_id,
+				       t.create_user,
+				       t.update_user,
+				       to_char(t.create_date,'yyyy-MM-dd hh24:mi:ss') create_date,
+				       to_char(t.update_date,'yyyy-MM-dd hh24:mi:ss') update_date
+				  from t_wx_push t where 1=1
+			    <if test='_parameter.get("0").searchValue!=null and _parameter.get("0").searchValue!=""'>
+			    	and lower(t.title)
+			    	 like '%' || lower(trim(#{0.searchValue,jdbcType=VARCHAR})) || '%'
+			    </if>
+			    order by t.order_num desc) t
+		    <![CDATA[where rownum <= #{1.endRecord}
+	    ) where rm > #{1.firstRecord} ]]>
+	</select>
+	
+	<insert id="addPush">
+		<selectKey resultType="java.lang.Integer" order="BEFORE" keyProperty="pushId">
+			select seq_wx_push.nextval from dual
+		</selectKey>
+		insert into t_wx_push t
+		  (push_id,
+		   title,
+		   content,
+		   img_url,
+		   html_url,
+		   open_url,
+		   direct_flag,
+		   start_date,
+		   end_date,
+		   push_date,
+		   order_num,
+		   act_status,
+		   class_id,
+		   lottery_id,
+		   push_type,
+		   test_user,
+		   target_user,
+		   push_status,
+		   notice_id,
+		   create_user,
+		   update_user,
+		   create_date,
+		   update_date)
+		values
+		  (#{pushId},
+		   #{title,jdbcType=VARCHAR},
+		   #{content,jdbcType=CLOB},
+		   #{imgUrl,jdbcType=VARCHAR},
+		   #{htmlUrl,jdbcType=VARCHAR},
+		   #{openUrl,jdbcType=VARCHAR},
+		   #{directFlag,jdbcType=VARCHAR},
+		   to_date(#{startDate,jdbcType=DATE},'yyyy-MM-dd hh24:mi:ss'),
+		   to_date(#{endDate,jdbcType=DATE},'yyyy-MM-dd hh24:mi:ss'),
+		   to_date(#{pushDate,jdbcType=DATE},'yyyy-MM-dd hh24:mi:ss'),
+		   #{pushId},
+		   #{actStatus,jdbcType=NUMERIC},
+		   #{classId,jdbcType=NUMERIC},
+		   #{lotteryId,jdbcType=NUMERIC},
+		   #{pushType,jdbcType=VARCHAR},
+		   #{testUser,jdbcType=VARCHAR},
+		   #{targetUser,jdbcType=VARCHAR},
+		   0,
+		   #{noticeId,jdbcType=NUMERIC},
+		   #{createUser},
+		   #{updateUser},
+		   sysdate,
+		   sysdate)
+	</insert>
+	
+	<update id="updatePush" parameterType="PushVO">   
+		update t_wx_push t
+		   set 
+		       t.title = #{title,jdbcType=VARCHAR},
+		       t.content = #{content,jdbcType=CLOB},
+		       t.img_url = #{imgUrl,jdbcType=VARCHAR},
+		       t.html_url = #{htmlUrl,jdbcType=VARCHAR},
+		       t.open_url = #{openUrl,jdbcType=VARCHAR},
+		       t.direct_flag = #{directFlag,jdbcType=VARCHAR},
+		       t.start_date = to_date(#{startDate,jdbcType=DATE},'yyyy-MM-dd hh24:mi:ss'),
+		       t.end_date = to_date(#{endDate,jdbcType=DATE},'yyyy-MM-dd hh24:mi:ss'),
+		       t.push_date = to_date(#{pushDate,jdbcType=DATE},'yyyy-MM-dd hh24:mi:ss'),
+		       t.order_num = #{orderNum,jdbcType=NUMERIC},
+		       t.act_status = #{actStatus,jdbcType=NUMERIC},
+		       t.class_id = #{classId,jdbcType=NUMERIC},
+		       t.lottery_id = #{lotteryId,jdbcType=NUMERIC},
+		       t.push_type = #{pushType,jdbcType=VARCHAR},
+		       t.test_user = #{testUser,jdbcType=VARCHAR},
+		       t.target_user = #{targetUser,jdbcType=VARCHAR},
+		       t.push_status = #{pushStatus,jdbcType=NUMERIC},
+		       t.notice_id = #{noticeId,jdbcType=NUMERIC},
+		       t.update_user = #{updateUser},
+		       t.update_date = sysdate
+		 where t.push_id = #{pushId,jdbcType=NUMERIC}
+    </update> 
+	<delete id="deletePush" parameterType="PushVO">   
+		delete t_wx_push t where t.push_id = #{pushId}
+    </delete>
+    
+    <insert id="createPushPlatform">
+    	begin
+		<foreach collection="arrId" item="item" index="index" separator=";">
+			insert into t_wx_push_platform t
+			  (platform_id, platform_value, push_id)
+			values
+			  (seq_wx_push_platform.nextval, #{item}, #{pushId})
+		</foreach>
+		;end; 
+	</insert>
+	
+	<delete id="deletePushPlatform">
+		delete t_wx_push_platform t
+		where t.push_id = #{pushId}
+	</delete>
+	
+	<select id="findPushPlatform" resultType="java.lang.String">
+		select t.platform_value
+		  from t_wx_push_platform t
+		  where t.push_id=#{pushId,jdbcType=NUMERIC}
+	</select>
+	
+	<insert id="createPushChannel">
+    	begin
+		<foreach collection="arrId1" item="item" index="index" separator=";">
+			insert into t_wx_push_channel t
+			  (channel_id, channel_value, push_id)
+			values
+			  (seq_wx_push_channel.nextval, #{item}, #{pushId})
+		</foreach>
+		;end; 
+	</insert>
+	
+	<delete id="deletePushChannel">
+		delete t_wx_push_channel t
+		where t.push_id = #{pushId}
+	</delete>
+	
+	<select id="findPushChannel" resultType="java.lang.String">
+		select t.channel_value
+		  from t_wx_push_channel t
+		  where t.push_id=#{pushId,jdbcType=NUMERIC}
+	</select>
+	
+	<insert id="createPushVersion">
+    	begin
+		<foreach collection="arrId2" item="item" index="index" separator=";">
+			insert into t_wx_push_version t
+			  (version_id, version_value, push_id)
+			values
+			  (seq_wx_push_version.nextval, #{item}, #{pushId})
+		</foreach>
+		;end; 
+	</insert>
+	
+	<delete id="deletePushVersion">
+		delete t_wx_push_version t
+		where t.push_id = #{pushId}
+	</delete>
+	
+	<select id="findPushVersion" resultType="java.lang.String">
+		select t.version_value
+		  from t_wx_push_version t
+		  where t.push_id=#{pushId,jdbcType=NUMERIC}
+	</select>
+	
+	<select id="findTargetUser" resultType="java.lang.String">
+		select t.target_user from t_wx_push_target t where t.push_id=#{pushId,jdbcType=NUMERIC}
+	</select>
+	<insert id="addTargetUser">
+    	begin
+		<foreach collection="targetUserList" item="item" index="index" separator=";">
+			insert into t_wx_push_target t
+			  (target_id, target_user, push_id)
+			values
+			  (seq_wx_push_target.nextval, #{item,jdbcType=VARCHAR}, #{pushId,jdbcType=NUMERIC})
+		</foreach>
+		;end; 
+	</insert>
+	<delete id="deleteTargetUser">
+		delete t_wx_push_target t
+		where t.push_id = #{pushId,jdbcType=NUMERIC}
+	</delete>
+	
+	<select id="findTaskDate" resultType="java.lang.String">
+		select to_char(nvl(t.task_date,''),'yyyy-MM-dd hh24:mi:ss') taskDate 
+		from t_wx_push_task t where t.push_id=#{pushId,jdbcType=NUMERIC}
+	</select>
+	<select id="findTaskDateByTask" resultType="java.lang.String">
+		select to_char(nvl(t.task_date,''),'yyyy-MM-dd hh24:mi:ss') taskDate 
+		from t_wx_push_task t where t.push_id=#{pushId,jdbcType=NUMERIC} and nvl(t.task_flag,0) = 0
+	</select>
+	<insert id="addTaskDate">
+    	begin
+		<foreach collection="taskDateArray" item="item" index="index" separator=";">
+			insert into t_wx_push_task t
+			  (task_id, task_date, task_flag, push_id)
+			values
+			  (seq_wx_push_task.nextval, to_date(#{item,jdbcType=VARCHAR},'yyyy-MM-dd hh24:mi:ss'), 
+			  0,
+			  #{pushId,jdbcType=NUMERIC})
+		</foreach>
+		;end; 
+	</insert>
+	<update id="updateTaskDate" parameterType="PushVO">
+	    update t_wx_push_task t
+		   set 
+		       t.task_flag = 1
+		 where t.task_id = #{taskId,jdbcType=NUMERIC}
+	</update>    
+	<delete id="deleteTaskDate">
+		delete t_wx_push_task t
+		where t.push_id = #{pushId,jdbcType=NUMERIC}
+	</delete>
+    <delete id="deleteTaskDateByDate">
+		delete t_wx_push_task t
+		where t.push_id = #{pushId,jdbcType=NUMERIC}
+		and task_date = to_date(#{taskDate,jdbcType=DATE},'yyyy-MM-dd hh24:mi:ss')
+	</delete>
+	
+    <select id="listPushApp" resultMap="pushVOMap">
+    	select t.push_id,
+		       t.title,
+		       t.content,
+		       t.img_url,
+		       t.html_url,
+		       t.open_url,
+		       t.direct_flag,
+		       to_char(t.start_date,'yyyy-MM-dd hh24:mi:ss') start_date,
+		       to_char(t.end_date,'yyyy-MM-dd hh24:mi:ss') end_date,
+		       t.order_num,
+		       t.act_status,
+		       t.class_id,
+		       t.lottery_id,
+		       t.push_type,
+		       t.test_user,
+		       t.push_status,
+		       t.notice_id,
+		       t.create_user,
+		       t.update_user,
+		       to_char(t.create_date,'yyyy-MM-dd hh24:mi:ss') create_date,
+		       to_char(t.update_date,'yyyy-MM-dd hh24:mi:ss') update_date
+		  from t_wx_push t, t_wx_push_channel t1, t_wx_push_platform t2
+		 where t.push_id = t1.push_id
+		   and t.push_id = t2.push_id
+		   and t1.channel_value = #{channel}
+		   and t2.platform_value = #{platform}
+    </select>
+    
+    <select id="listStatisticPush" resultMap="pushStatisticVOMap">
+        select t.statistic_id,
+		       t.platform,
+		       t.version,
+		       t.push_count,
+		       t.user_count,
+		       t.hit_count,
+		       t.msg_id,
+		       t.push_id
+		  from t_wx_push_statistic t where 1=1
+		  	  and t.update_flag = 0
+ 			  and t.create_date <![CDATA[>=]]> add_months(sysdate,-1)
+		  <if test="pushId != null and '' != pushId">
+		      and t.push_id = #{pushId}
+		  </if>
+		  <if test="platform != null and '' != platform">
+		      and t.platform= #{platform}
+		  </if>
+		  <if test="version != null and '' != version">
+		      and t.version = #{version}
+		  </if>   
+	</select>
+	<select id="listStatisticPushRate" resultMap="pushStatisticVOMap">
+        select 
+		       t.platform,
+		       t.version,
+		       t.push_id,
+		       sum(t.push_count) push_count,
+		       sum(t.user_count) user_count,
+		       sum(t.hit_count) hit_count		       
+		  from t_wx_push_statistic t where 1=1
+		  <if test="pushId != null and '' != pushId">
+		      and t.push_id = #{pushId}
+		  </if>
+		  <if test="platform != null and '' != platform">
+		      and t.platform = #{platform}
+		  </if>
+		  <if test="version != null and '' != version">
+		      and t.version = #{version}
+		  </if>
+		  group by t.platform,t.version,t.push_id   
+	</select>
+	<select id="getStatisticPush" resultMap="pushStatisticVOMap">
+	    select t.statistic_id,
+		       t.platform,
+		       t.version,
+		       t.push_count,
+		       t.user_count,
+		       t.hit_count,
+		       t.msg_id,
+		       t.push_id,
+		       t.update_flag
+		  from t_wx_push_statistic t
+		  where t.push_id = #{pushId}
+		  and t.platform = #{platform}
+		  and t.version = #{version}
+		  and rownum = 1
+	</select>
+	<insert id="addStatisticPush">
+		<selectKey resultType="java.lang.Integer" order="BEFORE" keyProperty="statisticId">
+			select seq_wx_push_statistic.nextval from dual
+		</selectKey>
+		insert into t_wx_push_statistic
+		  (statistic_id,
+		   platform,
+		   version,
+		   push_count,
+		   user_count,
+		   hit_count,
+		   msg_id,
+		   push_id,
+		   update_flag,
+		   create_user,
+		   update_user,
+		   create_date,
+		   update_date)
+		values
+		  (#{statisticId},
+		   #{platform,jdbcType=VARCHAR},
+		   #{version,jdbcType=VARCHAR},
+		   #{pushCount,jdbcType=NUMERIC},
+		   #{userCount,jdbcType=NUMERIC},
+		   #{hitCount,jdbcType=NUMERIC},
+		   #{msgId,jdbcType=NUMERIC},
+		   #{pushId,jdbcType=NUMERIC},
+		   0,
+		   #{createUser,jdbcType=VARCHAR},
+		   #{updateUser,jdbcType=VARCHAR},
+		   sysdate,
+		   sysdate)
+	</insert>
+	<update id="updateStatisticPushById">   
+		update t_wx_push_statistic t
+		   set 
+		       platform = #{platform,jdbcType=VARCHAR},
+		       version = #{version,jdbcType=VARCHAR},
+		       push_count = #{pushCount,jdbcType=NUMERIC},
+		       user_count = #{userCount,jdbcType=NUMERIC},
+		       hit_count = #{hitCount,jdbcType=NUMERIC},
+		       push_id = #{pushId,jdbcType=NUMERIC},
+		       t.update_flag = #{updateFlag,jdbcType=NUMERIC},
+		       t.update_user = #{updateUser,jdbcType=VARCHAR},
+		       t.update_date = sysdate
+		 where t.statistic_id = #{statisticId}
+    </update>
+	<update id="updateStatisticPush">   
+		update t_wx_push_statistic t
+		   set 
+		       platform = #{platform,jdbcType=VARCHAR},
+		       version = #{version,jdbcType=VARCHAR},
+		       push_count = #{pushCount,jdbcType=NUMERIC},
+		       user_count = #{userCount,jdbcType=NUMERIC},
+		       hit_count = #{hitCount,jdbcType=NUMERIC},
+		       push_id = #{pushId,jdbcType=NUMERIC},
+		       t.update_user = #{updateUser,jdbcType=VARCHAR},
+		       t.update_date = sysdate
+		 where msg_id = #{msgId}
+    </update>
+    
+	<select id="listRegistrationId" resultType="java.lang.String">
+		select distinct t1.registrationid
+		  from t_wx_push_target t, t_wx_push_register t1
+		 where t.target_user = t1.target_user
+		   and t.push_id=#{pushId,jdbcType=NUMERIC}
+	</select>
+	<select id="getPushRegisterByUser" resultMap="pushRegisterVOMap">
+		select distinct t.register_id, t.target_user, t.registrationid
+		  from t_wx_push_register t
+		 where t.target_user = #{targetUser}
+	</select>
+	<select id="getPushRegister" resultMap="pushRegisterVOMap">
+	    select t.register_id, t.target_user, t.registrationid
+		  from t_wx_push_register t
+		 where t.registrationid = #{registrationId}
+	</select>
+	<insert id="addPushRegister">
+		<selectKey resultType="java.lang.Integer" order="BEFORE" keyProperty="registerId">
+			select seq_wx_push_register.nextval from dual
+		</selectKey>
+		insert into t_wx_push_register
+		  (register_id, target_user, registrationid)
+		values
+		  (#{registerId}, #{targetUser}, #{registrationId})
+	</insert>
+	<update id="updatePushRegister">
+		update t_wx_push_register t
+		   set 
+		       t.target_user = #{targetUser}
+		 where t.registrationid = #{registrationId}
+	</update>    
+	<delete id="deletePushRegister">
+		delete t_wx_push_register t
+		where t.target_user = #{targetUser}
+		   and t.registrationid = #{registrationId}
+	</delete>
+</mapper>

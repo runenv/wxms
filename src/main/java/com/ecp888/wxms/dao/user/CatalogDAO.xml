@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecp888.wxms.dao.user.ICatalogDAO">
+	<resultMap id="catalogResultMap"  type="CatalogVO" >
+	   <id property="catalogId" column="catalog_id" />
+	   <result property="catalogName" column="catalog_name"  />
+	   <result property="catalogValue" column="catalog_value" />
+	   <result property="catalogUrl" column="catalog_url" />
+	   <result property="parentId" column="parent_id" />
+	   <result property="catalogFlag" column="catalog_flag" />
+	   <result property="catalogDescription" column="catalog_description" />
+	   <result property="orderNum" column="order_num" />
+	   <result property="createUser" column="create_user" />
+	   <result property="updateUser" column="update_user" />
+	   <result property="createDate" column="create_date" />
+	   <result property="updateDate" column="update_date" />		
+	</resultMap>
+	
+	<select id="countCatalogList" resultType="int">
+		select count(1) count
+        from (
+			select t.catalog_id,
+			       t.catalog_name,
+			       t.catalog_value,
+			       t.catalog_url,
+			       t.parent_id,
+			       t.catalog_flag,
+			       t.catalog_description,
+			       t.order_num,
+			       t.create_user,
+			       t.update_user,
+			       t.create_date,
+			       t.update_date
+			  from t_app_catalog t
+			  where nvl(t.parent_id,0)=0
+			  <if test="#{searchValue!=null and searchValue!=''}">
+		    	and lower(t.catalog_name || '|' || t.catalog_value || '|' || t.catalog_description) 
+		    	like '%' || lower(trim(#{searchValue,jdbcType=VARCHAR})) || '%'
+		      </if>
+	  	) t
+	</select>
+	<select id="findCatalogList" resultMap="catalogResultMap">
+		select *
+		  from (select t.*, rownum rm
+		          from (
+						select t.catalog_id,
+						       t.catalog_name,
+						       t.catalog_value,
+						       t.catalog_url,
+						       t.parent_id,
+						       t.catalog_flag,
+						       t.catalog_description,
+						       t.order_num,
+						       t.create_user,
+						       t.update_user,
+						       t.create_date,
+						       t.update_date
+						  from t_app_catalog t
+						  where nvl(t.parent_id,0)=0
+						  <if test='_parameter.get("0").searchValue!=null and _parameter.get("0").searchValue!=""'>
+						  	 and lower(t.catalog_name || '|' || t.catalog_value || '|' || t.catalog_description) 
+		    				 like '%' || lower(trim(#{0.searchValue,jdbcType=VARCHAR})) || '%'
+						  </if>
+						  order by t.catalog_id
+				  	) t
+			         <![CDATA[where rownum <= #{1.endRecord}
+			     )
+			 where rm > #{1.firstRecord}]]>
+	</select>
+	
+	<select id="findCatalog" resultMap="catalogResultMap">
+		select t.catalog_id,
+		       t.catalog_name,
+		       t.catalog_value,
+		       t.catalog_url,
+		       t.parent_id,
+		       t.catalog_flag,
+		       t.catalog_description,
+		       t.order_num,
+		       t.create_user,
+		       t.update_user,
+		       t.create_date,
+		       t.update_date
+		  from t_app_catalog t
+		  where t.catalog_id=#{catalogId,jdbcType=NUMERIC}
+	</select>
+	
+	<insert id="createCatalog">
+		<selectKey resultType="java.lang.Integer" order="BEFORE" keyProperty="catalogId">
+			select seq_app_catalog.nextval from dual
+		</selectKey>
+		insert into t_app_catalog
+		    (catalog_id,
+		     catalog_name,
+		     catalog_value,
+		     catalog_url,
+		     parent_id,
+		     catalog_flag,
+		     catalog_description,
+		     order_num,
+		     create_user,
+		     update_user,
+		     create_date,
+		     update_date)
+		  values
+		    (#{catalogId},
+		     #{catalogName},
+		     #{catalogValue},
+		     #{catalogUrl},
+		     #{parentId},
+		     #{catalogFlag},
+		     #{catalogDescription},
+		     #{orderNum,jdbcType=NUMERIC},
+		     #{createUser},
+		     #{updateUser},
+		     sysdate,
+		     sysdate)
+	</insert>
+	
+	<update id="updateCatalog" parameterType="CatalogVO">   
+        update t_app_catalog t
+		   set 
+		       t.catalog_name = #{catalogName},
+		       t.catalog_value = #{catalogValue},
+		       t.catalog_url = #{catalogUrl},
+		       t.parent_id = #{parentId},
+		       t.catalog_flag = #{catalogFlag},
+		       t.catalog_description = #{catalogDescription},
+		       t.order_num = #{orderNum,jdbcType=NUMERIC},
+		       t.update_user = #{updateUser},
+		       t.update_date = sysdate
+		 where catalog_id = #{catalogId}   
+    </update> 
+
+	<delete id="deleteCatalog" parameterType="int"> 
+		delete t_app_catalog t
+		 where catalog_id in (select t.catalog_id
+		                        from t_app_catalog t
+		                      connect by prior t.catalog_id = t.parent_id
+		                       start with t.catalog_id = #{catalogId})
+    </delete> 
+    
+    <select id="findCatalogTree" parameterType="java.lang.String" resultMap="catalogResultMap">
+        select *
+		  from (select t.catalog_id,
+		               t.catalog_name,
+		               t.catalog_value,
+		               t.catalog_url,
+		               t.parent_id,
+		               t.catalog_flag,
+		               t.catalog_description,
+		               t.order_num,
+		               t.create_user,
+		               t.update_user,
+		               t.create_date,
+		               t.update_date
+		          from t_app_catalog t
+		         order by t.order_num, t.catalog_name) t
+		connect by prior t.catalog_id = t.parent_id
+		 start with t.catalog_id = #{catalogId}
+    </select>
+    
+    <select id="findCatalogTreeByParentId" resultMap="catalogResultMap">
+    	select *
+  		from (
+	    	select distinct t.catalog_id,
+		           t.catalog_name,
+		           t.catalog_value,
+		           t.catalog_url,
+		           t.parent_id,
+		           t.catalog_flag,
+		           t.catalog_description,
+		           t.order_num,
+		           t.create_user,
+				   t.update_user,
+				   t.create_date,
+				   t.update_date
+				  from t_app_catalog t,t_app_role_catalog t1
+		      where t.catalog_id=t1.catalog_id
+		      and t1.role_id = #{roleVO.roleId}
+		      and t.catalog_flag = 1
+		      order by t.order_num, t.catalog_name)t
+		  connect by prior t.catalog_id = t.parent_id
+		  start with t.parent_id=#{parentId}
+    </select>
+    
+    <insert id="createRoleCatalog">
+    	<![CDATA[]]> begin
+		<foreach collection="arrId" item="item" index="index" separator=";">
+			insert into t_app_role_catalog
+				(role_catalog_id,
+				role_id,
+				catalog_id,
+				create_user,
+				update_user,
+				create_date,
+				update_date)
+			values
+			(seq_app_role_catalog.nextval,
+			#{item},
+			#{catalogId},
+			#{createUser},
+			#{updateUser},
+			sysdate,
+			sysdate)
+		</foreach>
+		;end; 
+	</insert>
+	
+	<delete id="deleteRoleCatalog">
+		delete t_app_role_catalog t
+ 			where t.catalog_id = #{catalogId}
+	</delete>
+	
+	<select id="findRoleCatalog" resultType="java.lang.String">
+		select t.role_id from t_app_role_catalog t where t.catalog_id = #{catalogId,jdbcType=NUMERIC}
+	</select>
+    
+</mapper>

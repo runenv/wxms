@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecp888.wxms.dao.user.IDeptDAO">
+	<resultMap type="DeptVO" id="deptVOMap">
+		<id property="deptId" column="dept_id" />
+		<result property="deptName" column="dept_name" />
+		<result property="deptStatus" column="dept_status" />
+		<result property="deptStatusName" column="dept_status_name" />
+		<result property="description" column="description" />
+		<result property="parentId" column="parent_id" />
+		<result property="createUser" column="create_user" />
+		<result property="updateUser" column="update_user" />
+		<result property="createDate" column="create_date" />
+		<result property="updateDate" column="update_date" />
+	</resultMap>
+    <select id="getDeptByName" parameterType="DeptVO" resultMap="deptVOMap">
+		select dept_id,
+	       dept_name,
+	       description,
+	       t.parent_id,
+	       dept_status,
+	       create_user,
+	       update_user,
+	       create_date,
+	       update_date
+	  from t_app_dept t
+	  where t.dept_name = #{deptName}
+	</select>
+	
+	<select id="getDeptById" parameterType="DeptVO" resultMap="deptVOMap">
+		select dept_id,
+	       dept_name,
+	       description,
+	       t.parent_id,
+	       dept_status,
+	       create_user,
+	       update_user,
+	       create_date,
+	       update_date
+	  from t_app_dept t
+	  where t.dept_id = #{deptId}
+	</select>
+	
+	<select id="countDept" parameterType="DeptVO" resultType="int">
+		select count(1) 
+		from t_app_dept t where 1=1
+		and nvl(t.parent_id,0)=0
+	    <if test="#{searchValue!=null and searchValue!=''}">
+	    	and lower(t.dept_name || '|' || t.description)
+		    	 like '%' || lower(trim(#{searchValue,jdbcType=VARCHAR})) || '%'
+	    </if>
+	</select>
+	
+	<select id="listDept" resultMap="deptVOMap">
+		select * from (
+			select t.*,rownum rm from (
+				select dept_id,
+			       dept_name,
+			       description,
+			       t.parent_id,
+			       dept_status,
+			       decode(dept_status,0,'禁用',1,'启用','启用') dept_status_name,
+			       create_user,
+			       update_user,
+			       create_date,
+			       update_date
+			    from t_app_dept t where 1=1
+			    and nvl(t.parent_id,0)=0
+			    <if test='_parameter.get("0").searchValue!=null and _parameter.get("0").searchValue!=""'>
+			    	and lower(t.dept_name || '|' || t.description)
+			    	 like '%' || lower(trim(#{0.searchValue,jdbcType=VARCHAR})) || '%'
+			    </if>
+			    order by dept_id) t
+		    <![CDATA[where rownum <= #{1.endRecord}
+	    ) where rm > #{1.firstRecord} ]]>
+	</select>
+	
+	<insert id="addDept" parameterType="DeptVO">
+		insert into t_app_dept
+		  (dept_id,
+		   dept_name,
+		   description,
+		   parent_id,
+		   dept_status,
+		   create_user,
+		   update_user,
+		   create_date,
+		   update_date)
+		values
+		  (seq_app_dept.nextval,
+		   #{deptName,jdbcType=VARCHAR},
+		   #{description,jdbcType=VARCHAR},
+		   #{parentId,jdbcType=NUMERIC},
+		   1,
+		   #{createUser,jdbcType=NUMERIC},
+		   #{updateUser,jdbcType=NUMERIC},
+		   sysdate,
+		   sysdate)		
+	</insert>
+	
+	<update id="updateDept" parameterType="DeptVO">   
+		<![CDATA[
+		update t_app_dept
+		   set 
+		       dept_name        = #{deptName,jdbcType=VARCHAR},
+		       description = #{description,jdbcType=VARCHAR},
+		       dept_status      = #{deptStatus,jdbcType=NUMERIC},
+		       update_user = #{updateUser,jdbcType=VARCHAR},
+		       update_date = sysdate
+		 where dept_id = #{deptId}
+		 ]]>
+    </update> 
+	<delete id="deleteDept" parameterType="DeptVO">   
+		delete t_app_dept t where t.dept_id = #{deptId}
+    </delete>
+    
+    <select id="findDeptTreeById" parameterType="java.lang.String" resultMap="deptVOMap">
+		select t.dept_id,
+		       t.dept_name,
+		       t.description,
+		       t.parent_id,
+		       t.dept_status,
+		       t.create_user,
+		       t.update_user,
+		       t.create_date,
+		       t.update_date
+		  from t_app_dept t
+		  connect by prior t.dept_id=t.parent_id
+		  start with t.dept_id=#{deptId}
+    </select>
+    
+</mapper>

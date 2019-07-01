@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecp888.wxms.dao.user.IUserRoleProgramDAO">
+	<resultMap type="UserRoleProgramVO" id="userRoleProgramVOMap">
+		<id property="userRoleProgramId" column="user_role_program_id" />
+		<result property="userId" column="user_id" />
+		<result property="userName" column="user_name" />
+		<association property="roleVO" column="role_id" javaType="RoleVO" resultMap="roleVOMap"/>
+	</resultMap>
+	<resultMap type="RoleVO" id="roleVOMap">
+		<id property="roleId" column="role_id" />
+		<result property="roleName" column="role_name" />
+		<result property="roleStatus" column="role_status" />
+		<result property="roleStatusName" column="role_status_name" />
+		<result property="roleDescription" column="role_description" />
+	</resultMap>
+    
+    <select id="countUserRole" resultType="int">
+		select count(1)
+          from (
+				select t.user_role_program_id,
+				       t.user_id,
+				       u.user_name,
+				       t.role_id,
+				       r.role_name
+				  from t_app_user_role_program t, t_app_user u, t_app_role r
+				 where t.user_id = u.user_id
+				   and t.role_id = r.role_id
+				   <if test='_parameter.userId!=null and _parameter.userId!=""'>
+				   	and t.user_id=#{userId,jdbcType=NUMERIC}
+				   </if>
+		  	) t
+	</select>
+	<select id="listUserRole" resultMap="userRoleProgramVOMap">
+		select *
+		  from (select t.*, rownum rm
+		          from (
+						select t.user_role_program_id,
+						       t.user_id,
+						       u.user_name,
+						       t.role_id,
+						       r.role_name
+						  from t_app_user_role_program t, t_app_user u, t_app_role r
+						 where t.user_id = u.user_id
+						   and t.role_id = r.role_id
+						   <if test='_parameter.get("0").userId!=null and _parameter.get("0").userId!=""'>
+						   	and t.user_id=#{0.userId,jdbcType=NUMERIC}
+						   </if>
+				  	) t
+			    <![CDATA[where rownum <= #{1.endRecord})
+			 where rm > #{1.firstRecord}]]>
+	</select>
+	<!-- -->
+	<select id="getUserRoleById" resultMap="userRoleProgramVOMap">
+		select t.user_role_program_id,
+		       t.user_id,
+		       u.user_name,
+		       t.role_id,
+		       r.role_name
+		  from t_app_user_role_program t, t_app_user u, t_app_role r
+		 where t.user_id = u.user_id
+		   and t.role_id = r.role_id
+		   and t.user_role_program_id= #{userRoleProgramId}
+	</select>
+	
+	<select id="getUserRoleByRoleId" resultMap="userRoleProgramVOMap">
+		select t.user_role_program_id,
+		       t.user_id,
+		       u.user_name,
+		       t.role_id,
+		       r.role_name
+		  from t_app_user_role_program t, t_app_user u, t_app_role r
+		 where t.user_id = u.user_id
+		   and t.role_id = r.role_id
+		   and t.role_id = #{roleVO.roleId}
+		   and t.user_id = #{userId}
+	</select>
+	
+	<insert id="addUserRole" parameterType="UserRoleProgramVO">
+		insert into t_app_user_role_program
+		  (user_role_program_id,
+		   user_id,
+		   role_id,
+		   program_id,
+		   create_user,
+		   update_user,
+		   create_date,
+		   update_date)
+		values
+		  (seq_app_user_role_program.nextval,
+		   #{userId,jdbcType=NUMERIC},
+		   #{roleVO.roleId,jdbcType=NUMERIC},
+		   '',
+		   #{createUser,jdbcType=NUMERIC},
+		   #{updateUser,jdbcType=NUMERIC},
+		   sysdate,
+		   sysdate)
+	</insert>
+	
+	<update id="updateUserRole">   
+		update t_app_user_role_program
+		   set 
+		       user_id = #{userId,jdbcType=NUMERIC},
+		       role_id = #{roleVO.roleId,jdbcType=NUMERIC},
+		       program_id='',
+		       update_user = #{updateUser,jdbcType=NUMERIC},
+		       update_date = sysdate
+		 where user_role_program_id = #{userRoleProgramId,jdbcType=NUMERIC}
+    </update>
+    
+	<delete id="deleteUserRole">   
+		delete t_app_user_role_program t where t.user_role_program_id = #{userRoleProgramId}
+    </delete>
+     
+</mapper>

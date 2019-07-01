@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecp888.wxms.dao.dict.IDictionaryDao">
+	<resultMap id="dictionaryResultMap"  type="DictionaryVO" >
+	   <id property="dictionaryId" column="dictionary_id" />
+	   <result property="dictionaryName" column="dictionary_name" />
+	   <result property="description" column="description" />
+	   <result property="dictionaryStatus" column="dictionary_status" />
+	   <result property="parentId" column="parent_id" />
+	   <result property="createUser" column="create_user" />
+	   <result property="updateUser" column="update_user" />
+	   <result property="createDate" column="create_date" />
+	   <result property="updateDate" column="update_date" />		
+	</resultMap>
+	
+	<resultMap id="dictItemResultMap" type="DictionaryItemVO" >
+	   <id property="itemId" column="item_id" />
+	   <result property="itemName" column="item_name" />
+	   <result property="itemCode" column="item_code" />
+	   <result property="dictionaryId" column="dictionary_id" />
+	   <result property="dictionaryName" column="dictionary_name" />
+	   <result property="description" column="description" />
+	   <result property="itemStatus" column="item_status" />
+	   <result property="itemStatusName" column="item_status_name" />
+	   <result property="parentId" column="parent_id" />
+	   <result property="createUser" column="create_user" />
+	   <result property="updateUser" column="update_user" />
+	   <result property="createDate" column="create_date" />
+	   <result property="updateDate" column="update_date" />		
+	</resultMap>
+	
+	<select id="countDictionaryList" resultType="int">
+		select count(1) count
+        from (
+			select t.dictionary_id,
+			       t.dictionary_name,
+			       t.description,
+			       t.dictionary_status,
+			       t.parent_id,
+			       t.create_user,
+			       t.update_user,
+			       t.create_date,
+			       t.update_date
+			  from t_app_dictionary t 
+			  where nvl(t.parent_id,0)=0
+	  	) t
+	</select>
+	<select id="findDictionaryList" resultMap="dictionaryResultMap">
+		select * from (
+			select t.*, rownum rm from (
+				select t.dictionary_id,
+				       t.dictionary_name,
+				       t.description,
+				       t.dictionary_status,
+				       t.parent_id,
+				       t.create_user,
+				       t.update_user,
+				       t.create_date,
+				       t.update_date
+				  from t_app_dictionary t 
+				  where nvl(t.parent_id,0)=0
+				  order by t.dictionary_id) t
+			  <![CDATA[where rownum <= #{1.endRecord}
+		) where rm > #{1.firstRecord}]]>
+	</select>
+	
+	<select id="countDictItemList" resultType="int">
+		select count(1) count
+         from (
+			select di.item_id,
+			       di.item_name,
+			       di.item_code,
+			       di.dictionary_id,
+			       d.dictionary_name,
+			       di.description,
+			       di.item_status,
+			       di.parent_id,
+			       di.create_user,
+			       di.update_user,
+			       di.create_date,
+			       di.update_date
+			  from t_app_dictionary d, t_app_dictionary_item di
+			 where d.dictionary_id = di.dictionary_id 
+			 and di.dictionary_id= #{dictionaryId,jdbcType=NUMERIC}
+			 and nvl(di.parent_id,0)=0
+	  	) t
+	</select>
+	
+	<select id="findDictItemList" resultMap="dictItemResultMap">
+		select *
+		  from (select t.*, rownum rm from (
+					select di.item_id,
+					       di.item_name,
+					       di.item_code,
+					       di.dictionary_id,
+					       d.dictionary_name,
+					       di.description,
+					       di.item_status,
+					       di.parent_id,
+					       di.create_user,
+					       di.update_user,
+					       di.create_date,
+					       di.update_date
+					  from t_app_dictionary d, t_app_dictionary_item di
+					 where d.dictionary_id = di.dictionary_id 
+					 and di.dictionary_id= #{0.dictionaryId,jdbcType=NUMERIC}
+					 and nvl(di.parent_id,0)=0
+					 order by di.item_id ) t
+			      <![CDATA[where rownum <= #{1.endRecord})
+		where rm > #{1.firstRecord}]]>
+	</select>
+	
+	<select id="findDictionary" resultMap="dictionaryResultMap">
+		select t.dictionary_id,
+			   t.dictionary_name,
+			   t.description,
+			   t.dictionary_status,
+			   
+			   t.create_user,
+			   t.update_user,
+			   t.create_date,
+			   t.update_date
+	    from t_app_dictionary t
+	    where t.dictionary_id=#{dictionaryId,jdbcType=NUMERIC}
+	</select>
+	
+	<select id="findDictItem" resultMap="dictItemResultMap">
+		select di.item_id,
+			   di.item_name,
+			   di.item_code,
+		       d.dictionary_id,
+		       d.dictionary_name,
+		       di.description,
+		       di.item_status,
+		       di.parent_id,
+		       di.create_user,
+		       di.update_user,
+		       to_char(di.create_date, 'yyyy-MM-dd') create_date,
+		       to_char(di.update_date, 'yyyy-MM-dd') update_date
+	      from t_app_dictionary d,
+	           t_app_dictionary_item di
+	      where d.dictionary_id = di.dictionary_id
+	      and di.item_id=#{itemId,jdbcType=NUMERIC}
+	</select>
+	<select id="checkDictItem" resultType="int">
+		select count(1) count
+		  from t_app_dictionary_item t
+		 where 1=1 
+		<if test="dictionaryId!=null and dictionaryId!=''">
+			and t.dictionary_id =#{dictionaryId,jdbcType=NUMERIC}
+		</if>
+		<if test="parentId!=null and parentId!=''">
+			and t.parent_id =#{parentId,jdbcType=NUMERIC}
+		</if>
+		<if test="itemCode!=null and itemCode!=''">
+			and t.item_code =#{itemCode,jdbcType=VARCHAR}
+		</if>  
+	</select>
+	<insert id="createDictionary">
+		insert into t_app_dictionary
+		  (dictionary_id,
+		   dictionary_name,
+		   description,
+		   dictionary_status,
+		   parent_id,
+		   create_user,
+		   update_user,
+		   create_date,
+		   update_date)
+		values
+		  (seq_app_dictionary.nextval,
+		   #{dictionaryName,jdbcType=VARCHAR},
+		   #{description,jdbcType=VARCHAR},
+		   #{dictionaryStatus,jdbcType=VARCHAR},
+		   #{parentId,jdbcType=NUMERIC},
+		   #{createUser,jdbcType=VARCHAR},
+		   #{updateUser,jdbcType=VARCHAR},
+		   sysdate,
+		   sysdate)
+	</insert>
+	
+	<insert id="createDictItem">
+		insert into t_app_dictionary_item
+		  (item_id,
+		   item_name,
+		   item_code,
+		   dictionary_id,
+		   description,
+		   item_status,
+		   parent_id,
+		   create_user,
+		   update_user,
+		   create_date,
+		   update_date)
+		values
+		  (seq_app_dictionary_item.nextval,
+		   #{itemName,jdbcType=VARCHAR},
+		   #{itemCode,jdbcType=VARCHAR},
+		   #{dictionaryId,jdbcType=VARCHAR},
+		   #{description,jdbcType=VARCHAR},
+		   #{itemStatus,jdbcType=VARCHAR},
+		   #{parentId,jdbcType=NUMERIC},
+		   #{createUser,jdbcType=VARCHAR},
+		   #{updateUser,jdbcType=VARCHAR},
+		   sysdate,
+		   sysdate)
+	</insert>
+	<update id="updateDictionary" parameterType="DictionaryVO">   
+        update t_app_dictionary 
+        	set dictionary_name = #{dictionaryName,jdbcType=VARCHAR}, 
+        		description = #{description,jdbcType=VARCHAR},
+        		dictionary_status = #{dictionaryStatus,jdbcType=VARCHAR},
+        		update_user = #{updateUser,jdbcType=VARCHAR},
+        		update_date = sysdate
+        where dictionary_id = #{dictionaryId,jdbcType=NUMERIC}   
+    </update> 
+    <update id="updateDictItem" parameterType="DictionaryItemVO">   
+        update t_app_dictionary_item 
+        	set item_name        = #{itemName,jdbcType=VARCHAR},
+        		item_code        = #{itemCode,jdbcType=VARCHAR},
+        		dictionary_id    =#{dictionaryId,jdbcType=VARCHAR},
+        		description      = #{description,jdbcType=VARCHAR},
+        		item_status      = #{itemStatus,jdbcType=VARCHAR},
+        		update_user = #{updateUser,jdbcType=VARCHAR},
+        		update_date = sysdate
+        where item_id = #{itemId,jdbcType=NUMERIC}   
+    </update> 
+	<delete id="deleteDictionary" parameterType="int">   
+        delete from t_app_dictionary
+		 where dictionary_id in (select t.dictionary_id
+		                           from t_app_dictionary t
+		                         connect by prior t.dictionary_id = t.parent_id
+		                          start with t.dictionary_id = #{dictionaryId,jdbcType=NUMERIC})  
+    </delete> 
+    <delete id="deleteDictItem" parameterType="int">   
+        delete from t_app_dictionary_item where item_id = #{itemId,jdbcType=NUMERIC}  
+    </delete>
+    <select id="lookupDict" parameterType="java.util.Map" resultMap="dictItemResultMap">
+     	select t1.item_id, t1.item_name,t1.item_code ,t1.dictionary_id, t1.description
+		  from t_app_dictionary t, t_app_dictionary_item t1
+		 where t.dictionary_id = t1.dictionary_id
+		 <if test="dictionaryId!=null and dictionaryId!=''">
+		 	and t1.dictionary_id = #{dictionaryId,jdbcType=NUMERIC}
+		 </if>
+		 <if test="dictionaryName!=null and dictionaryName!=''">
+		 	and t.dictionary_name = #{dictionaryName,jdbcType=VARCHAR}
+		 </if>
+		 <if test="parentId!=null and parentId!=''">
+		 	and t1.parent_id = #{parentId,jdbcType=NUMERIC}
+		 </if>
+    </select>
+    
+    <select id="findDictTree" parameterType="java.lang.String" resultMap="dictionaryResultMap">
+		select t.dictionary_id,
+		       t.dictionary_name,
+		       t.description,
+		       t.dictionary_status,
+		       t.parent_id,
+		       t.create_user,
+		       t.update_user,
+		       to_char(t.create_date, 'yyyy-MM-dd') create_date,
+		       to_char(t.update_date, 'yyyy-MM-dd') update_date
+		  from t_app_dictionary t
+		connect by prior t.dictionary_id = t.parent_id
+		 start with t.dictionary_id = #{dictionaryId,jdbcType=VARCHAR}
+    </select>
+    
+    <select id="findDictItemTree" parameterType="java.lang.String" resultMap="dictItemResultMap">
+		select t.item_id,
+		       t.item_name,
+		       t.item_code,
+		       t.dictionary_id,
+		       t.description,
+		       t.item_status,
+		       nvl(t.parent_id,0) parent_id
+		  from t_app_dictionary_item t
+		connect by prior t.item_id = t.parent_id
+		 start with t.item_id = #{itemId,jdbcType=VARCHAR}
+    </select>
+</mapper>

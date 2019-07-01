@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans" 
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+      xmlns:aop="http://www.springframework.org/schema/aop"      
+      xmlns:tx="http://www.springframework.org/schema/tx"       
+      xmlns:jdbc="http://www.springframework.org/schema/jdbc"       
+      xmlns:context="http://www.springframework.org/schema/context"
+      xmlns:jaxws="http://cxf.apache.org/jaxws" 
+      xmlns:jaxrs="http://cxf.apache.org/jaxrs"     
+      xsi:schemaLocation="       
+      http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd       
+      http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd       
+      http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd       
+      http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd       
+      http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd     
+      http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+      http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd"
+     >
+   <context:annotation-config />
+	<!-- 导入属性配置文件 default-autowire="byName"-->
+	<context:property-placeholder location="classpath:parameter.properties" />
+    <context:component-scan base-package="com" />
+    <import resource="classpath:META-INF/cxf/cxf.xml" />
+	<!-- <import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" /> -->
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+	
+	<!-- dbcp数据源 -->
+	<!-- <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}"></property>  
+		<property name="password" value="${jdbc.password}"></property>
+	</bean> -->
+	<!-- jndi数据源 -->
+	<bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+		<property name="jndiName">
+			<value>java:comp/env/jdbc/wxms</value>
+		</property>
+	</bean>
+
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="configLocation" value="classpath:mybatis-config.xml" />
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">    
+	    <property name="basePackage" value="com.ecp888.wxms.dao" />
+	    <!-- <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" /> -->
+	</bean>
+	
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">  
+        <tx:attributes>  
+            <tx:method name="load*" read-only="true" />  
+            <tx:method name="find*" read-only="true" />  
+            <tx:method name="get*" read-only="true" />
+            <tx:method name="list*" read-only="true" />
+            <tx:method name="count*" read-only="true" />
+            <tx:method name="select*" read-only="true" />
+            <tx:method name="*" propagation="REQUIRED" rollback-for="Exception" />
+        </tx:attributes>  
+    </tx:advice>
+    <aop:config>  
+        <aop:pointcut id="taxService"  
+            expression="execution(* com.ecp888.wxms.service.impl..*.*(..))" />  
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="taxService" />  
+    </aop:config>
+    
+    <aop:aspectj-autoproxy/>   
+	<bean id="logAspect" class="com.ecp888.wxms.service.log.LogAspect"/>
+	<bean id="rightAspect" class="com.ecp888.wxms.service.impl.user.RightAspect"/>    
+	<aop:config>
+	    <aop:aspect ref="logAspect">  
+	        <aop:pointcut id="logPointCut" expression="execution(* com.ecp888.wxms.service.impl..save*(..))
+	        	 or execution(* com.ecp888.wxms.service.impl..delete*(..))
+	        	 or execution(* com.ecp888.wxms.service.impl..update*(..))
+	        	 or execution(* com.ecp888.wxms.service.impl..add*(..))
+	        "/>  
+	        <aop:around pointcut-ref="logPointCut" method="recordLog"/>  
+	    </aop:aspect>
+	    <aop:aspect ref="rightAspect">  
+	        <aop:pointcut id="rightPointCut" 
+	        	expression="execution(* com.ecp888.wxms.service.impl..*(..))"/>  
+	        <aop:around pointcut-ref="rightPointCut" method="roleRightPoint"/>  
+	    </aop:aspect>  
+	</aop:config>
+	<bean id="SpringApplicationContext" class="com.ecp888.wxms.utils.ApplicationContextHelper"></bean>  
+	<import resource="classpath:applicationContext-wxms.xml" />
+</beans>

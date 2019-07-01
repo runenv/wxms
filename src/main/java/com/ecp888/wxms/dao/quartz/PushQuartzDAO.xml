@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecp888.wxms.dao.quartz.IPushQuartzDAO">
+	<resultMap type="PushVO" id="pushVOMap">
+		<id property="pushId" column="push_id" />
+		<result property="title" column="title" />
+		<result property="content" column="content" jdbcType="CLOB" javaType = "java.lang.String" 
+			typeHandler="org.apache.ibatis.type.ClobTypeHandler" />
+		<result property="imgUrl" column="img_url" />
+		<result property="htmlUrl" column="html_url" />
+		<result property="openUrl" column="open_url" />
+		<result property="directFlag" column="direct_flag" />
+		<result property="startDate" column="start_date" />
+		<result property="endDate" column="end_date" />
+		<result property="taskDate" column="task_date" />
+		<result property="taskId" column="task_id" />
+		<result property="orderNum" column="order_num" />
+		<result property="actStatus" column="act_status" />
+		<result property="classId" column="class_id" />
+		<result property="lotteryId" column="lottery_id" />
+		<result property="pushType" column="push_type" />
+		<result property="testUser" column="test_user" />
+		<result property="pushStatus" column="push_status" />
+		<result property="createUser" column="create_user" />
+		<result property="updateUser" column="update_user" />
+		<result property="createDate" column="create_date" />
+		<result property="updateDate" column="update_date" />
+	</resultMap>
+	<select id="getPushList" resultMap="pushVOMap">
+			select  p.push_id,
+					p.title,
+					p.content,
+					p.img_url,
+					p.html_url,
+					p.open_url,
+					p.direct_flag,
+					to_char(nvl(p.start_date,''),'yyyy-MM-dd hh24:mi:ss') start_date,
+		       		to_char(nvl(p.end_date,''),'yyyy-MM-dd hh24:mi:ss') end_date,
+		       		to_char(nvl(sk.task_date, ''), 'yyyy-MM-dd hh24:mi:ss') task_date,
+		       		sk.task_id,
+					p.order_num,
+					p.act_status,
+					p.class_id,
+					p.lottery_id,
+					p.push_type,
+					p.test_user,
+					p.push_status,
+					p.create_user,
+					p.update_user,
+					to_char(p.create_date,'yyyy-MM-dd hh24:mi:ss') create_date,
+		       		to_char(p.update_date,'yyyy-MM-dd hh24:mi:ss') update_date
+			from t_wx_push p,t_wx_push_task sk 
+			where p.push_id = sk.push_id 
+			and nvl(sk.task_flag,0) = 0
+			and sk.task_date<![CDATA[<=sysdate]]> and p.push_status=1 and p.push_type=0
+	</select>
+	<select id="getTarget" resultType="java.lang.String">
+			select t.target_user from t_wx_push_target t where t.push_id = #{pushId}
+	</select>
+	<select id="getChannel" resultType="java.lang.String">
+			select t.channel_value from t_wx_push_channel t where t.push_id = #{pushId}
+	</select>
+	<select id="getVersion" resultType="java.lang.String">
+			select t.version_value from t_wx_push_version t where t.push_id = #{pushId}
+	</select>
+	<select id="getPlatform" resultType="java.lang.String">
+			select t.platform_value from t_wx_push_platform t where t.push_id = #{pushId}
+	</select>
+</mapper>

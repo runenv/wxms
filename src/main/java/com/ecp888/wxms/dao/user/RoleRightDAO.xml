@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecp888.wxms.dao.user.IRoleRightDAO">
+	<resultMap type="RoleRightVO" id="roleRightVOMap">
+		<id property="roleRightId" column="role_right_id" />
+		<result property="roleId" column="role_id" />
+		<result property="roleName" column="role_name" />
+		<result property="rightId" column="right_id" />
+		<result property="rightName" column="right_name" />
+		<result property="rightValue" column="right_value" />
+		<result property="rightItemName" column="right_item_name" />
+		<result property="rightItemValue" column="right_item_value" />
+		<result property="resourceType" column="right_type" />
+		<result property="parentId" column="parent_id" />
+	</resultMap>
+    
+	<select id="listRoleRight" resultMap="roleRightVOMap">
+		with sql1 as (select min(t.right_id)+10000 right_id,
+		                     t.right_name,
+		                     t.right_value,
+		                     0 parent_id       
+		              from t_app_right t
+		              group by t.right_name,t.right_value),
+		     sql2 as (select right_id,
+		                     t.right_item_name,
+		                     t.right_item_value,
+		                     (select right_id from sql1 
+		                     	where sql1.right_name=t.right_name) parent_id       
+		              from t_app_right t)
+		select * from sql1
+		union all
+		select * from sql2   
+	</select>
+	
+	<select id="listRoleRightByRoleId" resultMap="roleRightVOMap">
+		select t.role_id,t.right_id from t_app_role_right t 
+			where t.role_id=#{roleId,jdbcType=NUMERIC}  
+	</select>
+	
+	<select id="listAllRight" resultMap="roleRightVOMap">
+		select t.right_id,
+		       t.right_name,
+		       t.right_value,
+		       t.right_item_name,
+		       t.right_item_value
+		  from t_app_right t
+	</select>
+	
+	<select id="getRoleRight" resultMap="roleRightVOMap">
+		select t.right_id,
+		       t.right_name,
+		       t.right_value,
+		       t.right_item_name,
+		       t.right_item_value
+		  from t_app_right t
+		 where t.right_value = #{appResource,jdbcType=VARCHAR}
+		   and t.right_item_value = #{appOperate,jdbcType=VARCHAR}
+	</select>
+     
+    <insert id="addRoleRight">
+    	insert into t_app_role_right
+		  (role_right_id,
+		   role_id,
+		   right_id,
+		   create_user,
+		   update_user,
+		   create_date,
+		   update_date)
+		values
+		  (seq_app_role_right.nextval,
+		   #{roleId,jdbcType=NUMERIC},
+		   #{rightId,jdbcType=NUMERIC},
+		   #{createUser,jdbcType=NUMERIC},
+		   #{updateUser,jdbcType=NUMERIC},
+		   sysdate,
+		   sysdate)
+	</insert>
+	
+	<delete id="deleteRoleRight">   
+		delete t_app_role_right t
+ 		where t.role_id = #{roleId,jdbcType=NUMERIC}
+    </delete>
+    
+    <insert id="addRight">   
+    	insert into t_app_right
+		  (right_id,
+		   right_name,
+		   right_value,
+		   right_item_name,
+		   right_item_value,
+		   right_type,
+		   right_status,
+		   create_user,
+		   update_user,
+		   create_date,
+		   update_date)
+		values
+		  (seq_app_right.nextval,
+		   #{rightName,jdbcType=VARCHAR},
+		   #{rightValue,jdbcType=VARCHAR},
+		   #{rightItemName,jdbcType=VARCHAR},
+		   #{rightItemValue,jdbcType=VARCHAR},
+		   #{resourceType,jdbcType=VARCHAR},
+		   1,
+		   #{createUser,jdbcType=NUMERIC},
+		   #{updateUser,jdbcType=NUMERIC},
+		   sysdate,
+		   sysdate)
+    </insert>
+    <delete id="deleteRight">   
+    	delete t_app_right
+    </delete>
+    
+</mapper>

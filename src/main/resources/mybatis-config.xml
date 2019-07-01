@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<typeAliases>
+		<!-- application -->
+		<typeAlias alias="CatalogVO" type="com.ecp888.wxms.vo.user.CatalogVO" />		
+		<typeAlias alias="UserVO" type="com.ecp888.wxms.vo.user.UserVO" />		
+		<typeAlias alias="RoleVO" type="com.ecp888.wxms.vo.user.RoleVO" />		
+		<typeAlias alias="DeptVO" type="com.ecp888.wxms.vo.user.DeptVO" />		
+		<typeAlias alias="UserRoleProgramVO" type="com.ecp888.wxms.vo.user.UserRoleProgramVO" />		
+		<typeAlias alias="RoleRightVO" type="com.ecp888.wxms.vo.user.RoleRightVO" />
+		<typeAlias alias="DictionaryVO" type="com.ecp888.wxms.vo.dict.DictionaryVO" />		
+		<typeAlias alias="DictionaryItemVO" type="com.ecp888.wxms.vo.dict.DictionaryItemVO" />		
+		<typeAlias alias="LogVO" type="com.ecp888.wxms.vo.log.LogVO" />
+		<!-- business -->
+		<typeAlias alias="AttachmentVO" type="com.ecp888.wxms.vo.attachment.AttachmentVO" />		
+		<typeAlias alias="NoticeVO" type="com.ecp888.wxms.vo.notice.NoticeVO" />
+		<typeAlias alias="AdvertVO" type="com.ecp888.wxms.vo.advert.AdvertVO" />		
+		<typeAlias alias="BulletinVO" type="com.ecp888.wxms.vo.bulletin.BulletinVO" />		
+		<typeAlias alias="DialogVO" type="com.ecp888.wxms.vo.dialog.DialogVO" />
+		<typeAlias alias="PushVO" type="com.ecp888.wxms.vo.push.PushVO" />
+	</typeAliases>
+	<mappers>
+		<!-- application -->     
+		<mapper resource="com/ecp888/wxms/dao/user/CatalogDAO.xml" />       
+		<mapper resource="com/ecp888/wxms/dao/user/UserDAO.xml" />		
+		<mapper resource="com/ecp888/wxms/dao/user/RoleDAO.xml" />
+		<mapper resource="com/ecp888/wxms/dao/user/DeptDAO.xml" />		
+		<mapper resource="com/ecp888/wxms/dao/user/UserRoleProgramDAO.xml" />	
+		<mapper resource="com/ecp888/wxms/dao/user/RoleRightDAO.xml" />	
+		<mapper resource="com/ecp888/wxms/dao/dict/DictionaryDao.xml" />
+		<mapper resource="com/ecp888/wxms/dao/log/LogDao.xml" />
+		<!-- business -->
+		<mapper resource="com/ecp888/wxms/dao/attach/AttachmentDAO.xml" />
+		<mapper resource="com/ecp888/wxms/dao/notice/NoticeDAO.xml" />
+		<mapper resource="com/ecp888/wxms/dao/advert/AdvertDAO.xml" />
+		<mapper resource="com/ecp888/wxms/dao/bulletin/BulletinDAO.xml" />
+		<mapper resource="com/ecp888/wxms/dao/dialog/DialogDAO.xml" />
+		<mapper resource="com/ecp888/wxms/dao/push/PushDAO.xml" />
+		<mapper resource="com/ecp888/wxms/dao/quartz/PushQuartzDAO.xml" />
+	</mappers>
+</configuration>		
+			
