@@ -14,7 +14,7 @@
 		<log4j.version>1.2.16</log4j.version>
 		<junit.version>4.11</junit.version>
 		<cxf.version>2.6.2</cxf.version>
-		<jackson.databind-version>2.9.9</jackson.databind-version>
+		<jackson.databind-version>2.9.10.8</jackson.databind-version>
 	</properties>
 
 	<dependencies>
